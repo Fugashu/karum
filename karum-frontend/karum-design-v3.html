@@ -1,0 +1,687 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KARUM — Design Suite v3</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600;9..40,700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0f0f0f;
+    --card: #1c1c1c;
+    --card-hover: #232323;
+    --elevated: #262626;
+    --border: #333333;
+    --border-hover: #4a4a4a;
+
+    --text: #f0ece6;
+    --text-mid: #b0aaa0;
+    --text-dim: #706a60;
+
+    --amber: #e8a832;
+    --amber-soft: rgba(232,168,50,0.10);
+    --amber-border: rgba(232,168,50,0.25);
+
+    --green: #4ade80;
+    --green-soft: rgba(74,222,128,0.08);
+    --red: #f87171;
+    --red-soft: rgba(248,113,113,0.08);
+    --orange: #fb923c;
+    --purple: #c084fc;
+    --silver: #b0b0b0;
+  }
+
+  * { margin:0; padding:0; box-sizing:border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', system-ui, sans-serif;
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .wrap { max-width: 1060px; margin: 0 auto; padding: 0 28px; }
+  .mono { font-family: 'Space Mono', monospace; }
+
+  /* ════════════ HERO ════════════ */
+  .hero {
+    padding: 80px 0 56px;
+    border-bottom: 3px solid var(--amber);
+  }
+  .hero-tag {
+    font-family: 'Space Mono', monospace;
+    font-size: 12px;
+    color: var(--text-dim);
+    margin-bottom: 20px;
+  }
+  .hero h1 {
+    font-family: 'Space Mono', monospace;
+    font-size: 72px;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    color: var(--text);
+    line-height: 1;
+    margin-bottom: 16px;
+  }
+  .hero h1 .a { color: var(--amber); }
+  .hero .sub {
+    font-size: 16px;
+    color: var(--text-mid);
+    max-width: 500px;
+    line-height: 1.6;
+  }
+
+  /* ════════════ SECTIONS ════════════ */
+  section { padding: 56px 0; border-bottom: 1px solid var(--border); }
+  .sec-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 36px;
+  }
+  .sec-num {
+    font-family: 'Space Mono', monospace;
+    font-size: 12px;
+    color: var(--amber);
+    font-weight: 700;
+  }
+  .sec-title {
+    font-family: 'Space Mono', monospace;
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+
+  /* ════════════ WORDMARK ════════════ */
+  .wm-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+  .wm-cell {
+    padding: 48px 36px;
+    position: relative;
+  }
+  .wm-label {
+    position: absolute;
+    top: 14px; left: 16px;
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    opacity: 0.35;
+  }
+  .wm-word {
+    font-family: 'Space Mono', monospace;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    line-height: 1;
+  }
+  .wm-tag {
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    margin-top: 8px;
+  }
+
+  /* ════════════ COLORS ════════════ */
+  .pal-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(155px, 1fr));
+    gap: 12px;
+  }
+  .pal {
+    background: var(--card);
+    overflow: hidden;
+  }
+  .pal-top { height: 72px; }
+  .pal-bot { padding: 12px 14px; }
+  .pal-name {
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 2px;
+  }
+  .pal-hex { font-family: 'Space Mono', monospace; font-size: 11px; color: var(--text-dim); }
+  .pal-use { font-size: 11px; color: var(--text-dim); margin-top: 6px; line-height: 1.4; }
+
+  /* ════════════ TYPE ════════════ */
+  .type-row {
+    padding: 28px;
+    background: var(--card);
+    margin-bottom: 8px;
+  }
+  .type-label {
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--amber);
+    margin-bottom: 12px;
+  }
+
+  /* ════════════ COMPONENTS ════════════ */
+  .comp-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+  .comp-box {
+    background: var(--card);
+    padding: 24px;
+  }
+  .comp-title {
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    margin-bottom: 18px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  /* Buttons */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 9px 18px;
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    cursor: pointer;
+    border: none;
+    transition: all 0.12s;
+  }
+  .btn-amber { background: var(--amber); color: #0f0f0f; }
+  .btn-amber:hover { background: #f0b840; }
+  .btn-outline { background: transparent; color: var(--text); border: 2px solid var(--border); }
+  .btn-outline:hover { border-color: var(--text-mid); }
+  .btn-ghost { background: transparent; color: var(--text-mid); border: 2px solid transparent; }
+  .btn-ghost:hover { color: var(--text); }
+  .btn-red { background: transparent; color: var(--red); border: 2px solid rgba(248,113,113,0.3); }
+
+  /* Badges */
+  .bdg {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 4px 10px;
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    font-weight: 700;
+    border: 1px solid;
+  }
+
+  /* Input */
+  .inp {
+    width: 100%;
+    padding: 11px 14px;
+    background: var(--bg);
+    border: 2px solid var(--border);
+    color: var(--text);
+    font-family: 'Space Mono', monospace;
+    font-size: 13px;
+    outline: none;
+    transition: border-color 0.15s;
+  }
+  .inp:focus { border-color: var(--amber); }
+  .inp::placeholder { color: var(--text-dim); }
+
+  /* Status dot */
+  .dot { display:inline-block; width:8px; height:8px; border-radius:50%; }
+  .dot-on { background: var(--green); box-shadow: 0 0 6px rgba(74,222,128,0.4); }
+  .dot-off { background: #555; }
+
+  /* Fuel bar */
+  .fuel { height: 4px; background: var(--border); }
+  .fuel-fill { height: 100%; }
+
+  /* Shop card */
+  .shop {
+    background: var(--card);
+    border: 2px solid var(--border);
+    padding: 18px 22px;
+    transition: border-color 0.12s;
+  }
+  .shop:hover { border-color: var(--border-hover); }
+  .shop + .shop { margin-top: 8px; }
+  .shop-head { display: flex; justify-content: space-between; align-items: center; }
+  .shop-name {
+    font-family: 'Space Mono', monospace;
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--text);
+    letter-spacing: 0.03em;
+  }
+  .shop-time {
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    color: var(--text-dim);
+  }
+  .shop-meta {
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    color: var(--text-dim);
+    margin-top: 6px;
+  }
+  .shop-offer {
+    margin-top: 14px;
+    padding: 14px 16px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .shop-qty {
+    font-family: 'Space Mono', monospace;
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--text);
+  }
+  .shop-price {
+    font-family: 'Space Mono', monospace;
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--amber);
+    text-align: right;
+  }
+  .shop-sub {
+    font-family: 'Space Mono', monospace;
+    font-size: 9px;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-top: 2px;
+  }
+
+  /* Stat card */
+  .stat {
+    padding: 18px;
+    background: var(--card);
+    border: 1px solid var(--border);
+  }
+  .stat-label {
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    margin-bottom: 6px;
+  }
+  .stat-val {
+    font-family: 'Space Mono', monospace;
+    font-size: 30px;
+    font-weight: 700;
+    line-height: 1;
+  }
+  .stat-sub {
+    font-size: 12px;
+    color: var(--text-dim);
+    margin-top: 6px;
+  }
+
+  /* ════════════ RULES ════════════ */
+  .rules-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+  .rule {
+    padding: 22px;
+    background: var(--card);
+  }
+  .rule-tag {
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+  .rule-tag.y { color: var(--green); }
+  .rule-tag.n { color: var(--red); }
+  .rule p { font-size: 14px; color: var(--text-mid); line-height: 1.6; }
+  .rule strong { color: var(--text); }
+
+  @media (max-width: 720px) {
+    .hero h1 { font-size: 40px; }
+    .wm-grid, .comp-grid, .rules-grid { grid-template-columns: 1fr; }
+    .wrap { padding: 0 18px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ════ HERO ════ -->
+<div class="hero">
+  <div class="wrap">
+    <div class="hero-tag">// design system v3</div>
+    <h1>K<span class="a">A</span>RUM</h1>
+    <p class="sub">Marketplace registry for EVE Frontier. Built on Sui. Sharp edges, clear data, no noise.</p>
+  </div>
+</div>
+
+<div class="wrap">
+
+<!-- ════ 01 WORDMARK ════ -->
+<section>
+  <div class="sec-head">
+    <span class="sec-title">Wordmark</span>
+    <span class="sec-num">01</span>
+  </div>
+
+  <div class="wm-grid">
+    <div class="wm-cell" style="background:var(--bg);">
+      <div class="wm-label" style="color:var(--text-dim);">On black</div>
+      <div class="wm-word" style="font-size:52px; color:var(--text);">K<span style="color:var(--amber);">A</span>RUM</div>
+      <div class="wm-tag" style="color:var(--text-dim);">Marketplace network</div>
+    </div>
+    <div class="wm-cell" style="background:var(--card);">
+      <div class="wm-label" style="color:var(--text-dim);">On surface</div>
+      <div class="wm-word" style="font-size:52px; color:var(--text);">KARUM</div>
+      <div class="wm-tag" style="color:var(--text-dim);">Marketplace network</div>
+    </div>
+    <div class="wm-cell" style="background:#f2f0eb;">
+      <div class="wm-label" style="color:#999;">Light</div>
+      <div class="wm-word" style="font-size:52px; color:#0f0f0f;">K<span style="color:#c08520;">A</span>RUM</div>
+      <div class="wm-tag" style="color:#999;">Marketplace network</div>
+    </div>
+    <div class="wm-cell" style="background:var(--amber);">
+      <div class="wm-label" style="color:rgba(0,0,0,0.3);">Inverted</div>
+      <div class="wm-word" style="font-size:52px; color:#0f0f0f;">KARUM</div>
+      <div class="wm-tag" style="color:rgba(0,0,0,0.4);">Marketplace network</div>
+    </div>
+  </div>
+
+  <!-- Scale -->
+  <div style="margin-top:12px; padding:32px; background:var(--card);">
+    <div class="type-label" style="margin-bottom:24px;">Scale reference</div>
+    <div style="display:flex; flex-direction:column; gap:20px;">
+      <div style="display:flex; align-items:baseline; gap:16px;">
+        <span class="mono" style="font-size:52px; font-weight:700; letter-spacing:0.14em;">KARUM</span>
+        <span class="mono" style="font-size:11px; color:var(--text-dim);">52px — hero / splash</span>
+      </div>
+      <div style="display:flex; align-items:baseline; gap:16px;">
+        <span class="mono" style="font-size:28px; font-weight:700; letter-spacing:0.1em;">KARUM</span>
+        <span class="mono" style="font-size:11px; color:var(--text-dim);">28px — page header</span>
+      </div>
+      <div style="display:flex; align-items:baseline; gap:16px;">
+        <span class="mono" style="font-size:16px; font-weight:700; letter-spacing:0.08em;">KARUM</span>
+        <span class="mono" style="font-size:11px; color:var(--text-dim);">16px — nav bar</span>
+      </div>
+      <div style="display:flex; align-items:baseline; gap:16px;">
+        <span class="mono" style="font-size:11px; font-weight:700; letter-spacing:0.06em; color:var(--text-mid);">KARUM</span>
+        <span class="mono" style="font-size:11px; color:var(--text-dim);">11px — badge / footer</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Favicon -->
+  <div style="margin-top:12px; padding:24px 32px; background:var(--card); display:flex; align-items:center; gap:28px; flex-wrap:wrap;">
+    <div class="type-label" style="margin:0;">Favicon</div>
+    <div style="display:flex; gap:16px; align-items:center;">
+      <div style="width:32px; height:32px; background:var(--amber); display:flex; align-items:center; justify-content:center;"><span class="mono" style="font-weight:700; font-size:20px; color:#0f0f0f;">K</span></div>
+      <div style="width:24px; height:24px; background:var(--amber); display:flex; align-items:center; justify-content:center;"><span class="mono" style="font-weight:700; font-size:15px; color:#0f0f0f;">K</span></div>
+      <div style="width:16px; height:16px; background:var(--amber); display:flex; align-items:center; justify-content:center;"><span class="mono" style="font-weight:700; font-size:10px; color:#0f0f0f;">K</span></div>
+    </div>
+    <span class="mono" style="font-size:11px; color:var(--text-dim);">Amber square, black K. Sharp corners always.</span>
+  </div>
+</section>
+
+<!-- ════ 02 COLOR ════ -->
+<section>
+  <div class="sec-head">
+    <span class="sec-title">Color</span>
+    <span class="sec-num">02</span>
+  </div>
+
+  <div class="pal-grid">
+    <div class="pal"><div class="pal-top" style="background:#0f0f0f;"></div><div class="pal-bot"><div class="pal-name">Background</div><div class="pal-hex">#0f0f0f</div><div class="pal-use">Page base</div></div></div>
+    <div class="pal"><div class="pal-top" style="background:#1c1c1c;"></div><div class="pal-bot"><div class="pal-name">Card</div><div class="pal-hex">#1c1c1c</div><div class="pal-use">Cards, panels, inputs</div></div></div>
+    <div class="pal"><div class="pal-top" style="background:#262626;"></div><div class="pal-bot"><div class="pal-name">Elevated</div><div class="pal-hex">#262626</div><div class="pal-use">Modals, dropdowns</div></div></div>
+    <div class="pal"><div class="pal-top" style="background:#333333;"></div><div class="pal-bot"><div class="pal-name">Border</div><div class="pal-hex">#333333</div><div class="pal-use">All borders</div></div></div>
+    <div class="pal"><div class="pal-top" style="background:#f0ece6;"></div><div class="pal-bot"><div class="pal-name">Text</div><div class="pal-hex">#f0ece6</div><div class="pal-use">Primary text, headings</div></div></div>
+    <div class="pal"><div class="pal-top" style="background:#b0aaa0;"></div><div class="pal-bot"><div class="pal-name">Text Mid</div><div class="pal-hex">#b0aaa0</div><div class="pal-use">Body text, descriptions</div></div></div>
+    <div class="pal"><div class="pal-top" style="background:#706a60;"></div><div class="pal-bot"><div class="pal-name">Text Dim</div><div class="pal-hex">#706a60</div><div class="pal-use">Labels, timestamps</div></div></div>
+    <div class="pal"><div class="pal-top" style="background:#e8a832;"></div><div class="pal-bot"><div class="pal-name">Amber</div><div class="pal-hex">#e8a832</div><div class="pal-use">Prices, CTA, brand accent</div></div></div>
+    <div class="pal"><div class="pal-top" style="background:#4ade80;"></div><div class="pal-bot"><div class="pal-name">Green</div><div class="pal-hex">#4ade80</div><div class="pal-use">Online, fuel OK</div></div></div>
+    <div class="pal"><div class="pal-top" style="background:#fb923c;"></div><div class="pal-bot"><div class="pal-name">Orange</div><div class="pal-hex">#fb923c</div><div class="pal-use">Low fuel warning</div></div></div>
+    <div class="pal"><div class="pal-top" style="background:#f87171;"></div><div class="pal-bot"><div class="pal-name">Red</div><div class="pal-hex">#f87171</div><div class="pal-use">Offline, danger, errors</div></div></div>
+    <div class="pal"><div class="pal-top" style="background:#c084fc;"></div><div class="pal-bot"><div class="pal-name">Purple</div><div class="pal-hex">#c084fc</div><div class="pal-use">Components resource</div></div></div>
+  </div>
+
+  <div style="margin-top:12px; padding:20px 28px; background:var(--card);">
+    <span class="mono" style="font-size:11px; color:var(--text-dim);">Key contrast ratios →</span>
+    <span class="mono" style="font-size:11px; color:var(--text);"> Text on BG: 14.8:1</span>
+    <span class="mono" style="font-size:11px; color:var(--text-dim);"> · </span>
+    <span class="mono" style="font-size:11px; color:var(--text-mid);"> Text Mid on BG: 8.3:1</span>
+    <span class="mono" style="font-size:11px; color:var(--text-dim);"> · </span>
+    <span class="mono" style="font-size:11px; color:var(--text-dim);"> Text Dim on BG: 4.2:1</span>
+    <span class="mono" style="font-size:11px; color:var(--text-dim);"> · All pass WCAG AA</span>
+  </div>
+</section>
+
+<!-- ════ 03 TYPE ════ -->
+<section>
+  <div class="sec-head">
+    <span class="sec-title">Typography</span>
+    <span class="sec-num">03</span>
+  </div>
+
+  <div class="type-row">
+    <div class="type-label">Display — Space Mono 700</div>
+    <div class="mono" style="font-size:36px; font-weight:700; letter-spacing:0.08em;">KARUM NETWORK</div>
+  </div>
+  <div class="type-row">
+    <div class="type-label">Heading — Space Mono 700</div>
+    <div class="mono" style="font-size:18px; font-weight:700; letter-spacing:0.03em;">Smart Storage Units Near You</div>
+  </div>
+  <div class="type-row">
+    <div class="type-label">Body — DM Sans 400, 16px</div>
+    <div style="font-size:16px; color:var(--text-mid); max-width:600px; line-height:1.65;">Browse registered shops across the Frontier. Each listing is verified on-chain. Cross-referenced with live SSU data so you always see real-time stock and status.</div>
+  </div>
+  <div class="type-row">
+    <div class="type-label">Data — Space Mono 700</div>
+    <div class="mono" style="font-size:28px; font-weight:700;">3,200 <span style="font-size:14px; color:var(--text-dim);">fuel</span> <span style="color:var(--amber);">@ 2.10</span></div>
+  </div>
+  <div class="type-row">
+    <div class="type-label">Meta — Space Mono 400, 12px</div>
+    <div class="mono" style="font-size:12px; color:var(--text-dim);">0xCAFE...1234 · Nyx Reach · 312 km · 3m ago</div>
+  </div>
+  <div class="type-row">
+    <div class="type-label">Label — Space Mono 700, 10px, Uppercase</div>
+    <div class="mono" style="font-size:10px; font-weight:700; letter-spacing:0.12em; text-transform:uppercase; color:var(--text-dim);">ONLINE SSUs &nbsp;&nbsp;&nbsp; TOTAL FUEL &nbsp;&nbsp;&nbsp; AVG PRICE</div>
+  </div>
+
+  <div style="margin-top:8px; padding:20px 28px; background:var(--card);">
+    <span class="mono" style="font-size:12px; color:var(--text-dim);">Rule:</span>
+    <span style="font-size:14px; color:var(--text-mid);"> <strong style="color:var(--text);">Space Mono</strong> for structure — brand, headings, data, labels, navigation. <strong style="color:var(--text);">DM Sans 16px</strong> for body text and descriptions. Body text is always at least 16px for readability.</span>
+  </div>
+</section>
+
+<!-- ════ 04 COMPONENTS ════ -->
+<section>
+  <div class="sec-head">
+    <span class="sec-title">Components</span>
+    <span class="sec-num">04</span>
+  </div>
+
+  <div class="comp-grid">
+    <div class="comp-box">
+      <div class="comp-title">Buttons</div>
+      <div style="display:flex; gap:10px; flex-wrap:wrap;">
+        <button class="btn btn-amber">REGISTER SHOP</button>
+        <button class="btn btn-outline">FILTER</button>
+        <button class="btn btn-ghost">RESET</button>
+        <button class="btn btn-red">REMOVE</button>
+      </div>
+    </div>
+
+    <div class="comp-box">
+      <div class="comp-title">Resource Badges</div>
+      <div style="display:flex; gap:8px; flex-wrap:wrap;">
+        <span class="bdg" style="color:var(--amber); border-color:var(--amber-border); background:var(--amber-soft);">⚡ 3,200</span>
+        <span class="bdg" style="color:var(--silver); border-color:rgba(176,176,176,0.25); background:rgba(176,176,176,0.06);">⛏ 1,500</span>
+        <span class="bdg" style="color:var(--purple); border-color:rgba(192,132,252,0.25); background:rgba(192,132,252,0.06);">⚙ 420</span>
+        <span class="bdg" style="color:var(--green); border-color:rgba(74,222,128,0.25); background:rgba(74,222,128,0.06);">🔩 890</span>
+      </div>
+    </div>
+
+    <div class="comp-box">
+      <div class="comp-title">Search</div>
+      <input class="inp" type="text" placeholder="Search name, system, ID...">
+    </div>
+
+    <div class="comp-box">
+      <div class="comp-title">Status + Fuel</div>
+      <div style="display:flex; gap:24px; align-items:center; margin-bottom:18px;">
+        <div style="display:flex; align-items:center; gap:7px;"><span class="dot dot-on"></span><span class="mono" style="font-size:12px;">ONLINE</span></div>
+        <div style="display:flex; align-items:center; gap:7px;"><span class="dot dot-off"></span><span class="mono" style="font-size:12px; color:var(--text-dim);">OFFLINE</span></div>
+      </div>
+      <div style="display:flex; flex-direction:column; gap:12px;">
+        <div style="display:flex; align-items:center; gap:12px;">
+          <div class="fuel" style="flex:1;"><div class="fuel-fill" style="width:82%; background:var(--green);"></div></div>
+          <span class="mono" style="font-size:11px; font-weight:700; color:var(--green); min-width:36px; text-align:right;">82%</span>
+        </div>
+        <div style="display:flex; align-items:center; gap:12px;">
+          <div class="fuel" style="flex:1;"><div class="fuel-fill" style="width:35%; background:var(--orange);"></div></div>
+          <span class="mono" style="font-size:11px; font-weight:700; color:var(--orange); min-width:36px; text-align:right;">35%</span>
+        </div>
+        <div style="display:flex; align-items:center; gap:12px;">
+          <div class="fuel" style="flex:1;"><div class="fuel-fill" style="width:9%; background:var(--red);"></div></div>
+          <span class="mono" style="font-size:11px; font-weight:700; color:var(--red); min-width:36px; text-align:right;">9%</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="comp-box">
+      <div class="comp-title">Resource Filter</div>
+      <div style="display:flex; gap:6px; flex-wrap:wrap;">
+        <button class="btn" style="padding:6px 14px; font-size:10px; background:var(--amber-soft); color:var(--amber); border:2px solid var(--amber-border);">⚡ FUEL</button>
+        <button class="btn btn-outline" style="padding:6px 14px; font-size:10px;">⛏ ORE</button>
+        <button class="btn btn-outline" style="padding:6px 14px; font-size:10px;">⚙ COMP</button>
+        <button class="btn btn-outline" style="padding:6px 14px; font-size:10px;">🔩 ALLOY</button>
+        <button class="btn btn-outline" style="padding:6px 14px; font-size:10px;">💠 ELEC</button>
+      </div>
+    </div>
+
+    <div class="comp-box">
+      <div class="comp-title">Stats</div>
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
+        <div class="stat"><div class="stat-label">ONLINE</div><div class="stat-val" style="color:var(--text);">67</div><div class="stat-sub">of 80 total</div></div>
+        <div class="stat"><div class="stat-label">TOTAL FUEL</div><div class="stat-val" style="color:var(--amber);">142K</div><div class="stat-sub">across all shops</div></div>
+        <div class="stat"><div class="stat-label">AVG PRICE</div><div class="stat-val" style="color:var(--text);">2.34</div><div class="stat-sub">fuel per unit</div></div>
+        <div class="stat"><div class="stat-label">LOW FUEL</div><div class="stat-val" style="color:var(--red);">5</div><div class="stat-sub">below 20%</div></div>
+      </div>
+    </div>
+
+    <!-- Shop Card full width -->
+    <div class="comp-box" style="grid-column: span 2;">
+      <div class="comp-title">Shop Cards</div>
+      <div class="shop">
+        <div class="shop-head">
+          <div style="display:flex; align-items:center; gap:10px;">
+            <span class="dot dot-on"></span>
+            <span class="shop-name">OASIS-472</span>
+          </div>
+          <span class="shop-time">2m ago</span>
+        </div>
+        <div class="shop-meta">NYX REACH · VOID RUNNERS · <span style="color:var(--green);">312 km</span></div>
+        <div style="margin:12px 0;"><div class="fuel"><div class="fuel-fill" style="width:78%; background:var(--green);"></div></div></div>
+        <div class="shop-offer">
+          <div>
+            <div class="shop-qty">3,200 <span style="font-size:13px;">⚡</span></div>
+            <div class="shop-sub">AVAILABLE</div>
+          </div>
+          <div>
+            <div class="shop-price">2.10</div>
+            <div class="shop-sub" style="text-align:right;">PER UNIT</div>
+          </div>
+        </div>
+        <div style="display:flex; gap:8px; margin-top:12px;">
+          <span class="bdg" style="color:var(--silver); border-color:rgba(176,176,176,0.2); background:rgba(176,176,176,0.04);">⛏ 800</span>
+          <span class="bdg" style="color:var(--purple); border-color:rgba(192,132,252,0.2); background:rgba(192,132,252,0.04);">⚙ 120</span>
+        </div>
+      </div>
+
+      <div class="shop" style="opacity:0.55;">
+        <div class="shop-head">
+          <div style="display:flex; align-items:center; gap:10px;">
+            <span class="dot dot-off"></span>
+            <span class="shop-name">DEPOT-891</span>
+            <span class="bdg" style="color:var(--red); border-color:rgba(248,113,113,0.2); background:var(--red-soft); font-size:9px; padding:2px 8px;">OFFLINE</span>
+          </div>
+          <span class="shop-time">4h ago</span>
+        </div>
+        <div class="shop-meta">OBSIDIAN VOID · IRON SYNDICATE · 890 km</div>
+        <div style="margin:12px 0;"><div class="fuel"><div class="fuel-fill" style="width:0%;"></div></div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ════ 05 RULES ════ -->
+<section>
+  <div class="sec-head">
+    <span class="sec-title">Rules</span>
+    <span class="sec-num">05</span>
+  </div>
+
+  <div class="rules-grid">
+    <div class="rule"><div class="rule-tag y">✓ DO</div><p><strong>KARUM</strong> is always all-caps, Space Mono 700, letter-spaced. The amber A is optional but preferred on dark backgrounds.</p></div>
+    <div class="rule"><div class="rule-tag n">✗ DON'T</div><p>Never write "Karum" in mixed case in the UI. The Kārum diacritical only appears in historical pitch copy.</p></div>
+    <div class="rule"><div class="rule-tag y">✓ DO</div><p>Keep <strong>clear contrast</strong> between background (#0f0f0f) and cards (#1c1c1c). The 12-step jump ensures everything is readable.</p></div>
+    <div class="rule"><div class="rule-tag n">✗ DON'T</div><p>Never use backgrounds darker than #0f0f0f or cards lighter than #1c1c1c. The range is tight on purpose.</p></div>
+    <div class="rule"><div class="rule-tag y">✓ DO</div><p>Body text is always <strong>DM Sans at 16px minimum</strong>. Monospace data can be smaller (11px) because it's always numbers, which are inherently more legible.</p></div>
+    <div class="rule"><div class="rule-tag n">✗ DON'T</div><p>Never set body paragraphs in Space Mono. It's great for data and labels, but walls of monospace text are fatiguing.</p></div>
+    <div class="rule"><div class="rule-tag y">✓ DO</div><p>Use <strong>sharp corners everywhere</strong>. Buttons, cards, inputs, badges — all 0px border-radius. Fuel bars and status dots are the only round elements.</p></div>
+    <div class="rule"><div class="rule-tag n">✗ DON'T</div><p>Never add border-radius, soft shadows, gradient fills, blur effects, or glow (except the subtle green glow on the online status dot).</p></div>
+  </div>
+</section>
+
+<!-- ════ 06 VOICE ════ -->
+<section style="border-bottom:none; padding-bottom:64px;">
+  <div class="sec-head">
+    <span class="sec-title">Voice</span>
+    <span class="sec-num">06</span>
+  </div>
+
+  <div style="display:flex; flex-direction:column; gap:8px;">
+    <div style="padding:22px 28px; background:var(--card);">
+      <div class="type-label" style="margin-bottom:10px;">Primary tagline</div>
+      <div class="mono" style="font-size:20px; font-weight:700; letter-spacing:0.03em;">The Frontier's First Marketplace Network</div>
+    </div>
+    <div style="padding:22px 28px; background:var(--card);">
+      <div class="type-label" style="margin-bottom:10px;">Action</div>
+      <div class="mono" style="font-size:20px; font-weight:700; letter-spacing:0.03em;">Find what you need. List what you sell.</div>
+    </div>
+    <div style="padding:22px 28px; background:var(--card);">
+      <div class="type-label" style="margin-bottom:10px;">Utility</div>
+      <div style="font-size:16px; color:var(--text-mid); line-height:1.6;">Registry says "sells fuel at 2.10." Gateway confirms "3,200 in stock, SSU online." Fly there. Refuel. Survive.</div>
+    </div>
+    <div style="padding:22px 28px; background:var(--card);">
+      <div class="type-label" style="margin-bottom:10px;">Origin</div>
+      <div style="font-size:16px; color:var(--text-mid); line-height:1.6;">Four thousand years ago, Assyrian merchants built the Kārum — humanity's first trade network. Every transaction on clay tablets. We're rebuilding it on-chain.</div>
+    </div>
+  </div>
+
+  <div style="margin-top:40px; text-align:center;">
+    <div class="mono" style="font-size:11px; color:var(--text-dim); letter-spacing:0.1em;">
+      KARUM DESIGN SYSTEM v3 · EVE FRONTIER × SUI 2026
+    </div>
+  </div>
+</section>
+
+</div>
+</body>
+</html>
