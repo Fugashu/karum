@@ -1,18 +1,19 @@
 /**
- * EVE Frontier data gateway — fetches live SSU data from Sui GraphQL
+ * EVE Frontier data gateway — fetches live SSU data from Sui JSON-RPC
  * and reference data from the World API.
  *
- * Architecture note: The old blockchain-gateway REST API is dead.
- * Smart assembly data now lives as Sui objects queried via GraphQL.
- * The World API provides reference data (types, solar systems).
+ * Architecture: SSUs are Sui shared objects. We read them directly via
+ * suiClient.getObject(), then follow references to get fuel (from the
+ * parent NetworkNode) and inventory items.
+ *
+ * The old blockchain-gateway REST API and the /v2/smartassemblies endpoint
+ * are both dead. Direct Sui RPC is the only path to live SSU data.
  */
 
 import { config } from "../config";
-import { suiGraphql } from "./sui-client";
+import { suiClient } from "./sui-client";
 import type {
   SSUData,
-  RawAssemblyJson,
-  InventoryItem,
   AssemblyState,
   GameType,
   SolarSystem,
@@ -20,7 +21,6 @@ import type {
 } from "../types";
 
 const WORLD_API = config.eve.worldApi;
-const WORLD_PKG = config.eve.worldPackageId;
 
 // ============================================================================
 // World API — Reference Data (REST)
@@ -66,272 +66,175 @@ export async function fetchSolarSystem(id: number): Promise<SolarSystem> {
 }
 
 // ============================================================================
-// Sui GraphQL — Live Smart Assembly Data
+// Sui JSON-RPC — Live SSU Data
 // ============================================================================
 
-/** Parse status variant to our AssemblyState type */
+/** Parse status variant string to our AssemblyState type */
 function parseState(variant: string | undefined): AssemblyState {
   if (!variant) return "unknown";
-  const v = variant.toLowerCase();
-  if (v === "online") return "online";
-  if (v === "offline" || v === "anchored") return "anchored";
-  if (v === "unanchored") return "unanchored";
-  if (v === "destroyed") return "destroyed";
+  const v = variant.toUpperCase();
+  if (v === "ONLINE") return "online";
+  if (v === "OFFLINE" || v === "ANCHORED") return "anchored";
+  if (v === "UNANCHORED") return "unanchored";
+  if (v === "DESTROYED") return "destroyed";
   return "unknown";
 }
 
-/** SSU type constant from @evefrontier/dapp-kit */
-const SSU_TYPE_SUFFIX = "::storage_unit::StorageUnit";
-
-interface SSUGraphQLNode {
-  address: string;
-  asMoveObject: {
-    contents: {
-      json: RawAssemblyJson;
-      type: { repr: string };
-    };
-    dynamicFields: {
-      nodes: Array<{
-        name: { json: unknown; type: { repr: string } };
-        contents: { json: Record<string, unknown> };
-      }>;
-    };
-  } | null;
-}
-
-interface SSUListResponse {
-  objects: {
-    nodes: SSUGraphQLNode[];
-    pageInfo: { hasNextPage: boolean; endCursor: string | null };
-  };
-}
-
 /**
- * Fetch all SSUs from Sui via GraphQL.
- * Paginates through all StorageUnit objects.
+ * Unwrap a Move struct value from Sui JSON-RPC response.
+ * Nested structs come as { type: "0x...::module::Type", fields: { ... } }
  */
-export async function fetchAllSSUs(): Promise<SSUData[]> {
-  const ssuType = `${WORLD_PKG}${SSU_TYPE_SUFFIX}`;
-  const allSSUs: SSUData[] = [];
-  let cursor: string | null = null;
-  let hasMore = true;
-
-  while (hasMore) {
-    const result: { data?: SSUListResponse; errors?: Array<{ message: string }> } = await suiGraphql<SSUListResponse>(
-      `query GetSSUs($type: String, $first: Int, $after: String) {
-        objects(filter: { type: $type }, first: $first, after: $after) {
-          nodes {
-            address
-            asMoveObject {
-              contents {
-                json
-                type { repr }
-              }
-              dynamicFields {
-                nodes {
-                  name { json type { repr } }
-                  contents { json }
-                }
-              }
-            }
-          }
-          pageInfo { hasNextPage endCursor }
-        }
-      }`,
-      { type: ssuType, first: 50, after: cursor },
-    );
-
-    if (result.errors?.length) {
-      console.error("[gateway] SSU query errors:", result.errors);
-      break;
-    }
-
-    const nodes = result.data?.objects?.nodes ?? [];
-    for (const node of nodes) {
-      const parsed = parseSSUNode(node);
-      if (parsed) allSSUs.push(parsed);
-    }
-
-    hasMore = result.data?.objects?.pageInfo?.hasNextPage ?? false;
-    cursor = result.data?.objects?.pageInfo?.endCursor ?? null;
+function unwrap(val: unknown): Record<string, unknown> {
+  if (val && typeof val === "object" && "fields" in val) {
+    return (val as { fields: Record<string, unknown> }).fields;
   }
-
-  return allSSUs;
+  return (val as Record<string, unknown>) ?? {};
 }
 
 /**
- * Fetch a single SSU with owner character and energy source data.
- * Uses the full assembly query from the dapp-kit.
+ * Fetch a single SSU's live data from Sui.
+ *
+ * Reads the StorageUnit object, then follows energy_source_id
+ * to the NetworkNode for fuel data. Inventory items are read
+ * from dynamic fields on the SSU.
  */
 export async function fetchSSU(objectId: string): Promise<SSUData | null> {
-  const charOwnerCapType = `${WORLD_PKG}::access::OwnerCap<${WORLD_PKG}::character::Character>`;
+  try {
+    // 1. Get the StorageUnit object
+    const ssuObj = await suiClient.getObject({
+      id: objectId,
+      options: { showContent: true, showOwner: true, showType: true },
+    });
 
-  const result = await suiGraphql<{
-    object: {
-      asMoveObject: {
-        contents: {
-          json: RawAssemblyJson;
-          type: { repr: string };
-          extract?: {
-            asAddress?: {
-              asObject?: {
-                asMoveObject?: {
-                  owner?: {
-                    address?: {
-                      objects?: {
-                        nodes?: Array<{
-                          contents?: {
-                            authorizedObj?: {
-                              asAddress?: {
-                                asObject?: {
-                                  asMoveObject?: {
-                                    contents?: {
-                                      json?: {
-                                        id: string;
-                                        metadata?: { name: string };
-                                        character_address?: string;
-                                        tribe_id?: number;
-                                      };
-                                    };
-                                  };
-                                };
-                              };
-                            };
-                          };
-                        }>;
-                      };
-                    };
-                  };
-                };
-              };
-            };
-          };
-          energySource?: {
-            asAddress?: {
-              asObject?: {
-                asMoveObject?: {
-                  contents?: { json?: RawAssemblyJson };
-                };
-              };
-            };
-          };
-        };
-        dynamicFields?: {
-          nodes: Array<{
-            name: { json: unknown; type: { repr: string } };
-            contents: { json: Record<string, unknown> };
-          }>;
-        };
-      } | null;
+    if (!ssuObj.data?.content || ssuObj.data.content.dataType !== "moveObject") {
+      console.warn("[gateway] SSU not found or not a Move object:", objectId);
+      return null;
+    }
+
+    const fields = ssuObj.data.content.fields as Record<string, unknown>;
+    const metadata = unwrap(fields.metadata);
+    const status = unwrap(fields.status);
+    const statusInner = unwrap(status.status);
+    const key = unwrap(fields.key);
+    const location = unwrap(fields.location);
+
+    // Status variant comes from the inner Status enum
+    const stateVariant =
+      (statusInner as { variant?: string }).variant ??
+      (statusInner as Record<string, unknown>)["@variant"] as string | undefined;
+
+    const ssu: SSUData = {
+      objectId,
+      itemId: parseInt(String(key.item_id ?? "0"), 10),
+      name: String(metadata.name ?? ""),
+      description: String(metadata.description ?? ""),
+      dappUrl: String(metadata.url ?? ""),
+      state: parseState(stateVariant),
+      typeId: parseInt(String(fields.type_id ?? "0"), 10),
+      locationHash: Array.isArray(location.location_hash)
+        ? location.location_hash.map((b: number) => b.toString(16).padStart(2, "0")).join("")
+        : String(location.location_hash ?? ""),
+      energySourceId: fields.energy_source_id as string | undefined,
+      inventory: { capacity: 0, usedCapacity: 0, items: [] },
     };
-  }>(
-    `query GetSSUDetail($objectId: SuiAddress!, $charType: String!) {
-      object(address: $objectId) {
-        asMoveObject {
-          contents {
-            json
-            type { repr }
-            extract(path: "owner_cap_id") {
-              asAddress {
-                asObject {
-                  asMoveObject {
-                    owner {
-                      ... on AddressOwner {
-                        address {
-                          objects(filter: { type: $charType }, last: 1) {
-                            nodes {
-                              contents {
-                                authorizedObj: extract(path: "authorized_object_id") {
-                                  asAddress {
-                                    asObject {
-                                      asMoveObject {
-                                        contents { json }
-                                      }
-                                    }
-                                  }
-                                }
-                              }
-                            }
-                          }
-                        }
-                      }
-                    }
-                  }
-                }
-              }
-            }
-            energySource: extract(path: "energy_source_id") {
-              asAddress {
-                asObject {
-                  asMoveObject {
-                    contents { json }
-                  }
-                }
-              }
-            }
+
+    // 2. Follow energy_source_id to get fuel from NetworkNode
+    if (ssu.energySourceId) {
+      try {
+        const nodeObj = await suiClient.getObject({
+          id: ssu.energySourceId,
+          options: { showContent: true },
+        });
+
+        if (nodeObj.data?.content?.dataType === "moveObject") {
+          const nodeFields = nodeObj.data.content.fields as Record<string, unknown>;
+          const fuel = unwrap(nodeFields.fuel);
+          const energy = unwrap(nodeFields.energy_source);
+
+          ssu.fuel = {
+            quantity: parseInt(String(fuel.quantity ?? "0"), 10),
+            maxCapacity: parseInt(String(fuel.max_capacity ?? "0"), 10),
+            burnRateMs: parseInt(String(fuel.burn_rate_in_ms ?? "0"), 10),
+            isBurning: fuel.is_burning === true,
+            burnStartTime: parseInt(String(fuel.burn_start_time ?? "0"), 10),
+            lastUpdated: parseInt(String(fuel.last_updated ?? "0"), 10),
+          };
+
+          // Check if parent node has online assemblies connected
+          const energyProd = parseInt(String(energy.current_energy_production ?? "0"), 10);
+          ssu.isParentNodeOnline = energyProd > 0 || ssu.fuel.isBurning;
+        }
+      } catch (e) {
+        console.warn("[gateway] Failed to fetch energy source:", ssu.energySourceId, e);
+      }
+    }
+
+    // 3. Read inventory from dynamic fields on the SSU.
+    //    inventory_keys are used as dynamic field keys (type 0x2::object::ID).
+    //    Each maps to an Inventory { items: VecMap<u64, ItemEntry>, max_capacity, used_capacity }.
+    try {
+      const dynFields = await suiClient.getDynamicFields({
+        parentId: objectId,
+        limit: 50,
+      });
+
+      for (const df of dynFields.data) {
+        if (!df.objectType?.includes("::inventory::Inventory")) continue;
+
+        try {
+          const dfObj = await suiClient.getObject({
+            id: df.objectId,
+            options: { showContent: true },
+          });
+
+          if (dfObj.data?.content?.dataType !== "moveObject") continue;
+          const dfFields = dfObj.data.content.fields as Record<string, unknown>;
+          const invValue = unwrap(dfFields.value);
+
+          // Capacity
+          if (invValue.max_capacity !== undefined) {
+            ssu.inventory.capacity += parseInt(String(invValue.max_capacity), 10);
           }
-          dynamicFields {
-            nodes {
-              name { json type { repr } }
-              contents { json }
-            }
+          if (invValue.used_capacity !== undefined) {
+            ssu.inventory.usedCapacity += parseInt(String(invValue.used_capacity), 10);
           }
+
+          // Items: VecMap<u64, ItemEntry> → { contents: [{ key, value: ItemEntry }] }
+          const itemsMap = unwrap(invValue.items);
+          const contents = (itemsMap.contents ?? []) as Array<unknown>;
+
+          for (const entry of contents) {
+            const entryFields = unwrap(entry);
+            const itemEntry = unwrap(entryFields.value);
+
+            ssu.inventory.items.push({
+              id: String(itemEntry.item_id ?? ""),
+              item_id: String(itemEntry.item_id ?? ""),
+              location: { location_hash: ssu.locationHash },
+              quantity: parseInt(String(itemEntry.quantity ?? "0"), 10),
+              tenant: String(itemEntry.tenant ?? ""),
+              type_id: parseInt(String(itemEntry.type_id ?? "0"), 10),
+              name: "", // resolved later via World API type lookup
+            });
+          }
+        } catch {
+          // Skip unreadable inventory fields
         }
       }
-    }`,
-    { objectId, charType: charOwnerCapType },
-  );
+    } catch {
+      // No dynamic fields accessible
+    }
 
-  if (result.errors?.length) {
-    console.error("[gateway] SSU detail errors:", result.errors);
+    return ssu;
+  } catch (e) {
+    console.error("[gateway] Failed to fetch SSU:", objectId, e);
     return null;
   }
-
-  const moveObj = result.data?.object?.asMoveObject;
-  if (!moveObj) return null;
-
-  const raw = moveObj.contents.json;
-  const ssu = parseRawSSU(objectId, raw, moveObj.dynamicFields?.nodes ?? []);
-
-  // Resolve owner character
-  const charJson =
-    moveObj.contents.extract?.asAddress?.asObject?.asMoveObject?.owner?.address
-      ?.objects?.nodes?.[0]?.contents?.authorizedObj?.asAddress?.asObject
-      ?.asMoveObject?.contents?.json;
-  if (charJson) {
-    ssu.owner = {
-      id: charJson.id,
-      name: charJson.metadata?.name ?? "Unknown",
-      address: charJson.character_address ?? "",
-      tribeId: charJson.tribe_id ?? 0,
-    };
-  }
-
-  // Resolve energy source (parent network node)
-  const energyJson =
-    moveObj.contents.energySource?.asAddress?.asObject?.asMoveObject?.contents
-      ?.json;
-  if (energyJson) {
-    const parentState = parseState(energyJson.status?.status?.["@variant"]);
-    ssu.isParentNodeOnline = parentState === "online";
-    if (energyJson.fuel) {
-      ssu.fuel = {
-        quantity: parseInt(energyJson.fuel.quantity, 10),
-        maxCapacity: parseInt(energyJson.fuel.max_capacity, 10),
-        burnRateMs: parseInt(energyJson.fuel.burn_rate_in_ms, 10),
-        isBurning: energyJson.fuel.is_burning,
-        burnStartTime: parseInt(energyJson.fuel.burn_start_time, 10),
-        lastUpdated: parseInt(energyJson.fuel.last_updated, 10),
-      };
-    }
-  }
-
-  return ssu;
 }
 
 /**
- * Batch fetch SSU details by ID.
- * Uses Promise.allSettled for resilience.
+ * Batch fetch SSU details by object ID.
+ * Uses Promise.allSettled for resilience — one failure doesn't block others.
  */
 export async function fetchSSUBatch(
   objectIds: string[],
@@ -345,80 +248,4 @@ export async function fetchSSUBatch(
     }
   }
   return map;
-}
-
-// ============================================================================
-// Parsing helpers
-// ============================================================================
-
-function parseSSUNode(node: {
-  address: string;
-  asMoveObject: {
-    contents: { json: RawAssemblyJson };
-    dynamicFields: {
-      nodes: Array<{
-        name: { json: unknown; type: { repr: string } };
-        contents: { json: Record<string, unknown> };
-      }>;
-    };
-  } | null;
-}): SSUData | null {
-  if (!node.asMoveObject) return null;
-  return parseRawSSU(
-    node.address,
-    node.asMoveObject.contents.json,
-    node.asMoveObject.dynamicFields.nodes,
-  );
-}
-
-function parseRawSSU(
-  objectId: string,
-  raw: RawAssemblyJson,
-  dynamicFields: Array<{
-    name: { json: unknown };
-    contents: { json: Record<string, unknown> };
-  }>,
-): SSUData {
-  // Parse inventory from dynamic fields
-  const inventoryKey = raw.inventory_keys?.[0];
-  let capacity = 0;
-  let usedCapacity = 0;
-  let items: InventoryItem[] = [];
-
-  if (inventoryKey) {
-    for (const df of dynamicFields) {
-      const nameJson = df.name.json;
-      const nameStr =
-        typeof nameJson === "string" ? nameJson : JSON.stringify(nameJson);
-      if (nameStr === inventoryKey || nameStr === `"${inventoryKey}"`) {
-        const val = df.contents.json as {
-          value?: {
-            max_capacity?: string;
-            used_capacity?: string;
-            items?: { contents?: Array<{ key: string; value: unknown }> };
-          };
-        };
-        capacity = parseInt(val.value?.max_capacity ?? "0", 10);
-        usedCapacity = parseInt(val.value?.used_capacity ?? "0", 10);
-        items =
-          val.value?.items?.contents?.map(
-            (c) => c.value as InventoryItem,
-          ) ?? [];
-        break;
-      }
-    }
-  }
-
-  return {
-    objectId,
-    itemId: parseInt(raw.key?.item_id ?? "0", 10),
-    name: raw.metadata?.name ?? "",
-    description: raw.metadata?.description ?? "",
-    dappUrl: raw.metadata?.url ?? "",
-    state: parseState(raw.status?.status?.["@variant"]),
-    typeId: parseInt(raw.type_id ?? "0", 10),
-    locationHash: raw.location?.location_hash ?? "",
-    energySourceId: raw.energy_source_id,
-    inventory: { capacity, usedCapacity, items },
-  };
 }
