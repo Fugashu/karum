@@ -27,6 +27,7 @@ export const MOCK_GAME_TYPES: GameType[] = [
   { id: 77800, name: "Common Ore", description: "Standard asteroid ore.", mass: 500, radius: 1, volume: 1, portionSize: 5000, groupName: "Ore", groupId: 0, categoryName: "Asteroid", categoryId: 25, iconUrl: "" },
   { id: 77810, name: "Metal Rich Ore", description: "Dense metallic ore.", mass: 800, radius: 1, volume: 1, portionSize: 5000, groupName: "Ore", groupId: 0, categoryName: "Asteroid", categoryId: 25, iconUrl: "" },
   { id: 77518, name: "Lens 3X", description: "For use with Crude Extractors only.", mass: 38020, radius: 1, volume: 10, portionSize: 1, groupName: "Crude Mining Lens", groupId: 0, categoryName: "Charge", categoryId: 8, iconUrl: "" },
+  { id: 77818, name: "Unstable Fuel", description: "Lingering dross barely enough to power a vessel.", mass: 42, radius: 1, volume: 0.28, portionSize: 357143, groupName: "Hydrogen Fuel", groupId: 0, categoryName: "Commodity", categoryId: 17, iconUrl: "" },
   { id: 72244, name: "Feral Data", description: "", mass: 0.1, radius: 1, volume: 0.1, portionSize: 1, groupName: "Rogue Drone Analysis Data", groupId: 0, categoryName: "Commodity", categoryId: 17, iconUrl: "" },
 ];
 
@@ -37,6 +38,19 @@ export const MOCK_GAME_TYPES: GameType[] = [
 const now = Date.now();
 
 export const MOCK_SHOP_LISTINGS: ShopListing[] = [
+  {
+    ssu_id: "0xaee832c14be961bb0e9337b995414dfa50357484956e7da5772ddae10f52b603",
+    owner: "0xc052ad5087a12a5c82daa33fc156dc5562f74fb939dafd12ceb71cd8fe140e15",
+    name: "Fugashu's Fuel Depot",
+    description: "Unstable Fuel for the brave. First registered shop on Karum.",
+    solar_system: "Angelice",
+    offers: [
+      { resource_name: "Unstable Fuel", resource_type_id: 77818, price_per_unit: 150, min_quantity: 10 },
+    ],
+    registered_at: now - 3600000,
+    last_updated: now - 600000,
+    is_active: true,
+  },
   {
     ssu_id: "0xaaa1111111111111111111111111111111111111111111111111111111111111",
     owner: "0xowner1111111111111111111111111111111111111111111111111111111111",
@@ -112,6 +126,28 @@ export const MOCK_SHOP_LISTINGS: ShopListing[] = [
 // ============================================================================
 
 export const MOCK_SSU_DATA: SSUData[] = [
+  {
+    objectId: "0xaee832c14be961bb0e9337b995414dfa50357484956e7da5772ddae10f52b603",
+    itemId: 1000000013557,
+    name: "",
+    description: "",
+    dappUrl: "",
+    state: "online",
+    typeId: 88083,
+    locationHash: "52edf597720280324a7a11eaec968f499fcfbefd545bc00975d12477b7961f49",
+    solarSystem: MOCK_SOLAR_SYSTEMS[0],
+    owner: { id: "0x51b28253bafccb33ed0cebed09d5079a7e005e1aed9919afa9fe31f4698d04e1", name: "Fugashu", address: "0xc052ad5087a12a5c82daa33fc156dc5562f74fb939dafd12ceb71cd8fe140e15", tribeId: 0 },
+    energySourceId: "0x0fe4c18a3825baccf91055d2d8d097e545322a6cd725b47c09e26b7edbd1b3e0",
+    isParentNodeOnline: true,
+    inventory: {
+      capacity: 20000000,
+      usedCapacity: 2800,
+      items: [
+        { id: "1000000013547", item_id: "1000000013547", location: { location_hash: "52edf597" }, quantity: 100, tenant: "utopia", type_id: 77818, name: "Unstable Fuel" },
+      ],
+    },
+    fuel: { quantity: 1988, maxCapacity: 100000, burnRateMs: 3600000, isBurning: true, burnStartTime: now - 7200000, lastUpdated: now - 300000 },
+  },
   {
     objectId: "0xaaa1111111111111111111111111111111111111111111111111111111111111",
     itemId: 100001,
