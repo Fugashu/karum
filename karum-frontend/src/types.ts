@@ -57,33 +57,55 @@ export type AssemblyKind =
   | "Refinery"
   | "Assembly";
 
-/** Raw JSON contents of a smart assembly Sui object */
+/**
+ * Raw JSON contents of a smart assembly Sui object.
+ *
+ * From Sui JSON-RPC, nested structs are wrapped as:
+ *   { type: "0x...::module::Type", fields: { ... } }
+ *
+ * The `fields` at the top level of `content.fields` gives the StorageUnit's
+ * direct fields. Nested values like `metadata`, `status`, `key`, `location`
+ * each come wrapped in the { type, fields } pattern.
+ *
+ * Real example structure (from sui_getObject on a deployed SSU):
+ *   energy_source_id: "0x..."
+ *   inventory_keys: ["0x...", "0x..."]
+ *   key: { type: "...::TenantItemId", fields: { item_id: "...", tenant: "utopia" } }
+ *   metadata: { type: "...::Metadata", fields: { name: "", description: "", ... } }
+ *   owner_cap_id: "0x..."
+ *   status: { type: "...::AssemblyStatus", fields: { status: { variant: "OFFLINE" } } }
+ *   type_id: "88083"
+ */
 export interface RawAssemblyJson {
-  id: string;
+  id: string | { id: string };
   type_id: string;
-  key?: { item_id: string; tenant: string };
-  metadata?: { assembly_id: string; name: string; description: string; url: string };
-  status?: { status: { "@variant": string } };
-  location?: { location_hash: string; structure_id: string };
+  key?: { fields?: { item_id: string; tenant: string }; item_id?: string; tenant?: string };
+  metadata?: { fields?: { assembly_id: string; name: string; description: string; url: string } };
+  status?: { fields?: { status: { variant?: string; "@variant"?: string } } };
+  location?: { fields?: { location_hash: number[] | string } };
   inventory_keys?: string[];
   energy_source_id?: string;
   owner_cap_id?: string;
-  // NetworkNode fields
+  // NetworkNode fields (when reading the energy source object)
   fuel?: {
-    max_capacity: string;
-    burn_rate_in_ms: string;
-    type_id: string;
-    unit_volume: string;
-    quantity: string;
-    is_burning: boolean;
-    previous_cycle_elapsed_time: string;
-    burn_start_time: string;
-    last_updated: string;
+    fields?: {
+      max_capacity: string;
+      burn_rate_in_ms: string;
+      type_id: string;
+      unit_volume: string;
+      quantity: string;
+      is_burning: boolean;
+      previous_cycle_elapsed_time: string;
+      burn_start_time: string;
+      last_updated: string;
+    };
   };
   energy_source?: {
-    max_energy_production: string;
-    current_energy_production: string;
-    total_reserved_energy: string;
+    fields?: {
+      max_energy_production: string;
+      current_energy_production: string;
+      total_reserved_energy: string;
+    };
   };
   connected_assembly_ids?: string[];
 }

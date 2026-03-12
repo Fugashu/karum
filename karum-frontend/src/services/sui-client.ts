@@ -4,7 +4,8 @@ import { getSuiGraphqlEndpoint } from "@evefrontier/dapp-kit";
 
 export const suiClient = new SuiJsonRpcClient({
   network: config.sui.network,
-} as ConstructorParameters<typeof SuiJsonRpcClient>[0]);
+  url: `https://fullnode.${config.sui.network}.sui.io:443`,
+});
 
 /** Sui GraphQL endpoint for the configured network */
 export const SUI_GRAPHQL_URL = getSuiGraphqlEndpoint(config.sui.network);
