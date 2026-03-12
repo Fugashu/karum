@@ -8,6 +8,10 @@ export const config = {
     packageId: import.meta.env.VITE_REGISTRY_PACKAGE_ID || "",
     registryId: import.meta.env.VITE_REGISTRY_OBJECT_ID || "",
   },
+  vendor: {
+    packageId: import.meta.env.VITE_VENDOR_PACKAGE_ID || "",
+    configId: import.meta.env.VITE_VENDOR_CONFIG_ID || "",
+  },
   eve: {
     /** EVE Frontier world-contracts package on Sui (Stillness tenant) */
     worldPackageId:
