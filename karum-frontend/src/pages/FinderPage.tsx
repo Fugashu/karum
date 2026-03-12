@@ -1,5 +1,6 @@
 import { useShops } from "../hooks/use-shops";
 import { useFilters, type SortMode } from "../hooks/use-filters";
+import { itemInfo } from "../services/item-types";
 
 const SORT_OPTIONS: { value: SortMode; label: string }[] = [
   { value: "stock-desc", label: "MOST STOCK" },
@@ -276,48 +277,66 @@ export function FinderPage() {
                           );
                           const isFilteredResource =
                             filters.resourceTypeId === offer.resource_type_id;
+                          const info = itemInfo(offer.resource_type_id);
                           return (
-                            <button
-                              key={i}
-                              onClick={() =>
-                                setResourceType(
-                                  isFilteredResource
-                                    ? null
-                                    : offer.resource_type_id,
-                                )
-                              }
-                              className={`flex items-center gap-2 border px-3 py-1.5 text-xs cursor-pointer hover:border-border-hover ${
-                                isFilteredResource
-                                  ? "bg-amber/10 border-amber text-amber"
-                                  : "bg-bg border-border"
-                              }`}
-                            >
-                              <span
-                                className={
-                                  isFilteredResource
-                                    ? "text-amber"
-                                    : "text-text-mid"
+                            <div key={i} className="relative group">
+                              <button
+                                onClick={() =>
+                                  setResourceType(
+                                    isFilteredResource
+                                      ? null
+                                      : offer.resource_type_id,
+                                  )
                                 }
+                                className={`flex items-center gap-2 border px-3 py-1.5 text-xs cursor-pointer hover:border-border-hover ${
+                                  isFilteredResource
+                                    ? "bg-amber/10 border-amber text-amber"
+                                    : "bg-bg border-border"
+                                }`}
                               >
-                                {offer.resource_name}
-                              </span>
-                              <span className="text-amber font-bold">
-                                {offer.price_per_unit.toLocaleString()}
-                              </span>
-                              <span className="text-text-dim">|</span>
-                              <span
-                                className={
-                                  inStock &&
-                                  inStock.quantity >= offer.min_quantity
-                                    ? "text-green"
-                                    : "text-red"
-                                }
-                              >
-                                {inStock
-                                  ? `${inStock.quantity.toLocaleString()} in stock`
-                                  : "out of stock"}
-                              </span>
-                            </button>
+                                <span
+                                  className={
+                                    isFilteredResource
+                                      ? "text-amber"
+                                      : "text-text-mid"
+                                  }
+                                >
+                                  {offer.resource_name}
+                                </span>
+                                <span className="text-amber font-bold">
+                                  {offer.price_per_unit.toLocaleString()}
+                                </span>
+                                <span className="text-text-dim">|</span>
+                                <span
+                                  className={
+                                    inStock &&
+                                    inStock.quantity >= offer.min_quantity
+                                      ? "text-green"
+                                      : "text-red"
+                                  }
+                                >
+                                  {inStock
+                                    ? `${inStock.quantity.toLocaleString()} in stock`
+                                    : "out of stock"}
+                                </span>
+                              </button>
+                              {info && (
+                                <div className="absolute bottom-full left-0 mb-1 hidden group-hover:block z-50 pointer-events-none">
+                                  <div className="bg-elevated border border-border px-3 py-2 text-xs whitespace-nowrap">
+                                    <div className="text-text font-bold mb-1">{info.name}</div>
+                                    <div className="text-text-dim">
+                                      {info.category} · {info.group}
+                                    </div>
+                                    <div className="text-text-dim">
+                                      Vol: {info.volume} · Mass: {info.mass}
+                                    </div>
+                                    <div className="text-text-dim">
+                                      ID: {info.id}
+                                    </div>
+                                  </div>
+                                </div>
+                              )}
+                            </div>
                           );
                         })}
                       </div>
