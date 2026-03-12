@@ -10,6 +10,9 @@ const PACKAGE_ID = config.sui.packageId;
 const REGISTRY_ID = config.sui.registryId;
 const CLOCK = "0x6";
 
+const VENDOR_PACKAGE = config.vendor.packageId;
+const VENDOR_CONFIG = config.vendor.configId;
+
 interface OfferInput {
   resourceName: string;
   resourceTypeId: number;
@@ -41,8 +44,9 @@ export function buildRegisterShopTx(
     ],
   });
 
-  // Batch offers into the same PTB
+  // Batch offers into the same PTB — both registry and vendor config
   for (const offer of offers) {
+    // Add offer to ShopRegistry (for display/discovery)
     tx.moveCall({
       target: `${PACKAGE_ID}::registry::add_offer`,
       arguments: [
@@ -55,6 +59,20 @@ export function buildRegisterShopTx(
         tx.object(CLOCK),
       ],
     });
+
+    // Also set price in VendorConfig (for on-chain buy enforcement)
+    if (VENDOR_PACKAGE && VENDOR_CONFIG) {
+      tx.moveCall({
+        target: `${VENDOR_PACKAGE}::vendor::set_price`,
+        arguments: [
+          tx.object(VENDOR_CONFIG),
+          tx.pure.address(ssuId),
+          tx.pure.u64(offer.resourceTypeId),
+          tx.pure.u64(offer.pricePerUnit),
+          tx.pure.u32(offer.minQuantity),
+        ],
+      });
+    }
   }
 
   return tx;

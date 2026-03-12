@@ -114,14 +114,15 @@ export async function fetchSSU(objectId: string): Promise<SSUData | null> {
     const fields = ssuObj.data.content.fields as Record<string, unknown>;
     const metadata = unwrap(fields.metadata);
     const status = unwrap(fields.status);
-    const statusInner = unwrap(status.status);
     const key = unwrap(fields.key);
     const location = unwrap(fields.location);
 
-    // Status variant comes from the inner Status enum
+    // Status enum: { type: "...::Status", variant: "ONLINE", fields: {} }
+    // variant is a sibling of fields, NOT inside fields — don't unwrap
+    const statusEnum = status.status as Record<string, unknown> | undefined;
     const stateVariant =
-      (statusInner as { variant?: string }).variant ??
-      (statusInner as Record<string, unknown>)["@variant"] as string | undefined;
+      (statusEnum?.variant as string) ??
+      (statusEnum?.["@variant"] as string | undefined);
 
     const ssu: SSUData = {
       objectId,
@@ -169,9 +170,11 @@ export async function fetchSSU(objectId: string): Promise<SSUData | null> {
       }
     }
 
-    // 3. Read inventory from dynamic fields on the SSU.
-    //    inventory_keys are used as dynamic field keys (type 0x2::object::ID).
-    //    Each maps to an Inventory { items: VecMap<u64, ItemEntry>, max_capacity, used_capacity }.
+    // 3. Read the OWNER's main inventory from dynamic fields on the SSU.
+    //    The main inventory is keyed by the SSU's owner_cap_id (type 0x2::object::ID).
+    //    We only read this one — buyer-owned inventories are separate slots
+    //    that should NOT count toward "in stock" numbers.
+    const ownerCapId = fields.owner_cap_id as string | undefined;
     try {
       const dynFields = await suiClient.getDynamicFields({
         parentId: objectId,
@@ -180,6 +183,12 @@ export async function fetchSSU(objectId: string): Promise<SSUData | null> {
 
       for (const df of dynFields.data) {
         if (!df.objectType?.includes("::inventory::Inventory")) continue;
+
+        // Only read the owner's main inventory (keyed by owner_cap_id)
+        if (ownerCapId) {
+          const dfKey = df.name?.value;
+          if (dfKey && dfKey !== ownerCapId) continue;
+        }
 
         try {
           const dfObj = await suiClient.getObject({
@@ -217,6 +226,9 @@ export async function fetchSSU(objectId: string): Promise<SSUData | null> {
               name: "", // resolved later via World API type lookup
             });
           }
+
+          // Only need the one main inventory
+          if (ownerCapId) break;
         } catch {
           // Skip unreadable inventory fields
         }

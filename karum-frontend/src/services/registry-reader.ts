@@ -1,6 +1,10 @@
 /**
  * Reads ShopRegistry from our Karum Sui Move contract.
- * Uses getDynamicFields() pagination on the registry shared object.
+ *
+ * The Registry uses Table<address, ShopListing>. In Sui, Table entries
+ * are dynamic fields on the Table's own UID, not the parent object.
+ * So we first read the Registry to get the Table UID, then paginate
+ * dynamic fields on that Table.
  */
 
 import { config } from "../config";
@@ -9,9 +13,39 @@ import type { ShopListing, ShopOffer } from "../types";
 
 const REGISTRY_ID = config.sui.registryId;
 
+/** Cache the Table UID so we don't re-fetch the Registry every time */
+let cachedTableId: string | null = null;
+
+/**
+ * Get the Table<address, ShopListing> object ID from the ShopRegistry.
+ */
+async function getTableId(): Promise<string> {
+  if (cachedTableId) return cachedTableId;
+
+  const obj = await suiClient.getObject({
+    id: REGISTRY_ID,
+    options: { showContent: true },
+  });
+
+  if (obj.data?.content?.dataType !== "moveObject") {
+    throw new Error("[registry-reader] Registry is not a Move object");
+  }
+
+  const fields = obj.data.content.fields as Record<string, unknown>;
+  const shops = fields.shops as { fields?: { id?: { id?: string } } };
+  const tableId = shops?.fields?.id?.id;
+
+  if (!tableId) {
+    throw new Error("[registry-reader] Could not extract Table UID from Registry");
+  }
+
+  cachedTableId = tableId;
+  return tableId;
+}
+
 /**
  * Fetch all shop listings from the ShopRegistry.
- * Paginates through dynamic fields on the registry shared object.
+ * Paginates through dynamic fields on the Table object.
  */
 export async function fetchAllShops(): Promise<ShopListing[]> {
   if (!REGISTRY_ID) {
@@ -21,13 +55,14 @@ export async function fetchAllShops(): Promise<ShopListing[]> {
     return [];
   }
 
+  const tableId = await getTableId();
   const shops: ShopListing[] = [];
   let cursor: string | null = null;
   let hasMore = true;
 
   while (hasMore) {
-    const page: Awaited<ReturnType<typeof suiClient.getDynamicFields>> = await suiClient.getDynamicFields({
-      parentId: REGISTRY_ID,
+    const page = await suiClient.getDynamicFields({
+      parentId: tableId,
       cursor: cursor ?? undefined,
       limit: 50,
     });
@@ -36,7 +71,7 @@ export async function fetchAllShops(): Promise<ShopListing[]> {
     const fieldPromises = page.data.map(async (field) => {
       try {
         const obj = await suiClient.getDynamicFieldObject({
-          parentId: REGISTRY_ID,
+          parentId: tableId,
           name: field.name,
         });
 
@@ -70,8 +105,9 @@ export async function fetchShop(ssuId: string): Promise<ShopListing | null> {
   if (!REGISTRY_ID) return null;
 
   try {
+    const tableId = await getTableId();
     const obj = await suiClient.getDynamicFieldObject({
-      parentId: REGISTRY_ID,
+      parentId: tableId,
       name: {
         type: "address",
         value: ssuId,
@@ -87,26 +123,49 @@ export async function fetchShop(ssuId: string): Promise<ShopListing | null> {
   }
 }
 
+/**
+ * Parse a ShopListing from Sui JSON-RPC dynamic field response.
+ *
+ * The response wraps the listing in Field<address, ShopListing>:
+ *   { id, name: "0x...", value: { type: "...::ShopListing", fields: { ... } } }
+ *
+ * Offers come as vector of { type: "...::ShopOffer", fields: { ... } }
+ */
 function parseShopListing(fields: Record<string, unknown>): ShopListing {
-  const value = (fields.value ?? fields) as Record<string, unknown>;
+  // Unwrap the dynamic field value wrapper
+  const valueWrapper = fields.value as { fields?: Record<string, unknown> } | Record<string, unknown>;
+  const value = (valueWrapper && "fields" in valueWrapper ? valueWrapper.fields : valueWrapper) ?? {};
+  const v = value as Record<string, unknown>;
 
-  const offersRaw = (value.offers ?? []) as Array<Record<string, unknown>>;
-  const offers: ShopOffer[] = offersRaw.map((o) => ({
-    resource_name: String(o.resource_name ?? ""),
-    resource_type_id: Number(o.resource_type_id ?? 0),
-    price_per_unit: Number(o.price_per_unit ?? 0),
-    min_quantity: Number(o.min_quantity ?? 0),
-  }));
+  // Parse offers — each wrapped in { type, fields }
+  const offersRaw = (v.offers ?? []) as Array<unknown>;
+  const offers: ShopOffer[] = offersRaw.map((raw) => {
+    const o = unwrapFields(raw);
+    return {
+      resource_name: String(o.resource_name ?? ""),
+      resource_type_id: Number(o.resource_type_id ?? 0),
+      price_per_unit: Number(o.price_per_unit ?? 0),
+      min_quantity: Number(o.min_quantity ?? 0),
+    };
+  });
 
   return {
-    ssu_id: String(value.ssu_id ?? ""),
-    owner: String(value.owner ?? ""),
-    name: String(value.name ?? ""),
-    description: String(value.description ?? ""),
-    solar_system: String(value.solar_system ?? ""),
+    ssu_id: String(v.ssu_id ?? ""),
+    owner: String(v.owner ?? ""),
+    name: String(v.name ?? ""),
+    description: String(v.description ?? ""),
+    solar_system: String(v.solar_system ?? ""),
     offers,
-    registered_at: Number(value.registered_at ?? 0),
-    last_updated: Number(value.last_updated ?? 0),
-    is_active: Boolean(value.is_active ?? true),
+    registered_at: Number(v.registered_at ?? 0),
+    last_updated: Number(v.last_updated ?? 0),
+    is_active: v.is_active === true || v.is_active === "true",
   };
+}
+
+/** Unwrap { type, fields } wrapping from Sui JSON-RPC */
+function unwrapFields(val: unknown): Record<string, unknown> {
+  if (val && typeof val === "object" && "fields" in val) {
+    return (val as { fields: Record<string, unknown> }).fields;
+  }
+  return (val as Record<string, unknown>) ?? {};
 }

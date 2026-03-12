@@ -1,27 +1,26 @@
+import { useState } from "react";
+import { Transaction } from "@mysten/sui/transactions";
+import { useDAppKit } from "@mysten/dapp-kit-react";
 import { useShops } from "../hooks/use-shops";
 import { useFilters, type SortMode } from "../hooks/use-filters";
+import { useWallet } from "../hooks/use-wallet";
+import { useCharacter } from "../hooks/use-character";
 import { itemInfo } from "../services/item-types";
+import { config } from "../config";
+import type { MergedShop, ShopOffer } from "../types";
+
+const VENDOR_PKG = config.vendor.packageId;
+const VENDOR_CONFIG = config.vendor.configId;
 
 const SORT_OPTIONS: { value: SortMode; label: string }[] = [
   { value: "stock-desc", label: "MOST STOCK" },
   { value: "updated-desc", label: "RECENTLY UPDATED" },
   { value: "price-asc", label: "LOWEST PRICE" },
-  { value: "fuel-asc", label: "LOWEST FUEL" },
   { value: "name-asc", label: "NAME A-Z" },
 ];
 
-/** Mock distance for display — seeded from ssu_id hash */
-function mockDistance(ssuId: string): string {
-  let h = 0;
-  for (let i = 0; i < ssuId.length; i++) {
-    h = (h * 31 + ssuId.charCodeAt(i)) | 0;
-  }
-  const km = 50 + Math.abs(h % 950);
-  return `${km} km`;
-}
-
 export function FinderPage() {
-  const { data: shops = [], isLoading, error } = useShops();
+  const { data: shops = [], isLoading, error, refetch, isFetching } = useShops();
   const {
     filtered,
     filters,
@@ -39,19 +38,16 @@ export function FinderPage() {
     (filters.solarSystem !== null ? 1 : 0) +
     (filters.onlineOnly ? 1 : 0);
 
-  // Active filter styles (amber treatment)
-  const activeSelect =
-    "bg-amber/10 border-amber text-amber";
-  const inactiveSelect =
-    "bg-card border-border text-text-mid";
+  const activeSelect = "bg-amber/10 border-amber text-amber";
+  const inactiveSelect = "bg-card border-border text-text-mid";
 
   return (
     <div className="min-h-screen bg-bg">
       {/* Header */}
       <header className="border-b-2 border-border px-6 py-4 flex items-center justify-between">
-        <h1 className="text-2xl font-bold tracking-[0.12em] text-text">
+        <a href="/" className="text-2xl font-bold tracking-[0.12em] text-text hover:text-text no-underline">
           K<span className="text-amber">A</span>RUM
-        </h1>
+        </a>
         <nav className="flex gap-4 text-sm text-text-mid">
           <a href="/" className="text-amber border-b-2 border-amber pb-1">
             FINDER
@@ -62,27 +58,33 @@ export function FinderPage() {
         </nav>
       </header>
 
-      <main className="max-w-7xl mx-auto px-4 py-6">
-        {/* Search */}
-        <div className="flex gap-3 mb-3 flex-wrap">
+      <main className="max-w-4xl mx-auto px-4 py-6">
+        {/* Search + Refresh */}
+        <div className="flex gap-2 mb-3">
           <input
             type="text"
             placeholder="Search shops, systems, owners..."
             value={filters.search}
             onChange={(e) => setSearch(e.target.value)}
-            className="flex-1 min-w-[240px] bg-card border-2 border-border px-4 py-3 text-text placeholder:text-text-dim focus:border-amber focus:outline-none"
+            className="flex-1 min-w-[200px] bg-card border-2 border-border px-4 py-2.5 text-text text-sm placeholder:text-text-dim focus:border-amber focus:outline-none"
           />
+          <button
+            onClick={() => refetch()}
+            disabled={isFetching}
+            className="px-4 py-2.5 border-2 border-border text-text-dim text-xs font-bold tracking-wider hover:border-amber hover:text-amber disabled:opacity-50"
+          >
+            {isFetching ? "..." : "REFRESH"}
+          </button>
         </div>
 
         {/* Filter row */}
-        <div className="flex gap-2 mb-6 flex-wrap items-center">
-          {/* Resource dropdown */}
+        <div className="flex gap-2 mb-5 flex-wrap items-center">
           <select
             value={filters.resourceTypeId ?? ""}
             onChange={(e) =>
               setResourceType(e.target.value ? Number(e.target.value) : null)
             }
-            className={`border-2 px-3 py-2.5 text-sm focus:border-amber focus:outline-none appearance-none cursor-pointer min-w-[180px] ${
+            className={`border-2 px-3 py-2 text-xs focus:border-amber focus:outline-none appearance-none cursor-pointer min-w-[160px] ${
               filters.resourceTypeId !== null ? activeSelect : inactiveSelect
             }`}
           >
@@ -94,11 +96,10 @@ export function FinderPage() {
             ))}
           </select>
 
-          {/* Solar system dropdown */}
           <select
             value={filters.solarSystem ?? ""}
             onChange={(e) => setSolarSystem(e.target.value || null)}
-            className={`border-2 px-3 py-2.5 text-sm focus:border-amber focus:outline-none appearance-none cursor-pointer min-w-[160px] ${
+            className={`border-2 px-3 py-2 text-xs focus:border-amber focus:outline-none appearance-none cursor-pointer min-w-[140px] ${
               filters.solarSystem !== null ? activeSelect : inactiveSelect
             }`}
           >
@@ -110,11 +111,10 @@ export function FinderPage() {
             ))}
           </select>
 
-          {/* Sort dropdown */}
           <select
             value={filters.sort}
             onChange={(e) => setSort(e.target.value as SortMode)}
-            className="bg-card border-2 border-border px-3 py-2.5 text-sm text-text-mid focus:border-amber focus:outline-none appearance-none cursor-pointer min-w-[180px]"
+            className="bg-card border-2 border-border px-3 py-2 text-xs text-text-mid focus:border-amber focus:outline-none appearance-none cursor-pointer min-w-[150px]"
           >
             {SORT_OPTIONS.map((o) => (
               <option key={o.value} value={o.value}>
@@ -123,20 +123,17 @@ export function FinderPage() {
             ))}
           </select>
 
-          {/* Online only toggle */}
           <button
             onClick={toggleOnlineOnly}
-            className="px-4 py-2.5 border-2 text-sm font-bold tracking-wider"
-            style={
+            className={`px-3 py-2 border-2 text-xs font-bold tracking-wider ${
               filters.onlineOnly
-                ? { backgroundColor: "rgba(232, 168, 50, 0.1)", borderColor: "#e8a832", color: "#e8a832" }
-                : undefined
-            }
+                ? "bg-amber/10 border-amber text-amber"
+                : "border-border text-text-dim hover:border-border-hover"
+            }`}
           >
             ONLINE ONLY
           </button>
 
-          {/* Clear filters */}
           {activeFilterCount > 0 && (
             <button
               onClick={() => {
@@ -144,53 +141,24 @@ export function FinderPage() {
                 setSolarSystem(null);
                 if (filters.onlineOnly) toggleOnlineOnly();
               }}
-              className="px-3 py-2.5 text-xs text-text-dim hover:text-red"
+              className="px-2 py-2 text-xs text-text-dim hover:text-red"
             >
               CLEAR ({activeFilterCount})
             </button>
           )}
-        </div>
 
-        {/* Stats */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-2 mb-6">
-          {[
-            {
-              label: "SHOPS",
-              value: `${filtered.length}${filtered.length !== shops.length ? ` / ${shops.length}` : ""}`,
-            },
-            {
-              label: "ONLINE",
-              value: filtered.filter((s) => s.isOnline).length,
-              color: "text-green",
-            },
-            {
-              label: "RESOURCES",
-              value: new Set(
-                filtered.flatMap((s) =>
-                  s.listing.offers.map((o) => o.resource_type_id),
-                ),
-              ).size,
-            },
-            {
-              label: "LOW FUEL",
-              value: filtered.filter(
-                (s) => s.fuelPercent < 20 && s.fuelPercent > 0,
-              ).length,
-              color: "text-orange",
-            },
-          ].map((stat) => (
-            <div key={stat.label} className="bg-card border border-border p-4">
-              <div className="text-xs text-text-dim tracking-wider">
-                {stat.label}
-              </div>
-              <div
-                className={`leading-tight font-bold mt-1 ${stat.color ?? "text-text"}`}
-                style={{ fontSize: "32px" }}
-              >
-                {stat.value}
-              </div>
-            </div>
-          ))}
+          {/* Inline stats */}
+          <div className="ml-auto flex gap-4 text-xs text-text-dim">
+            <span>
+              {filtered.length}{filtered.length !== shops.length ? ` / ${shops.length}` : ""} shops
+            </span>
+            <span className="text-green">
+              {filtered.filter((s) => s.isOnline).length} online
+            </span>
+            <span>
+              {new Set(filtered.flatMap((s) => s.listing.offers.map((o) => o.resource_type_id))).size} resources
+            </span>
+          </div>
         </div>
 
         {/* Loading / Error */}
@@ -201,13 +169,13 @@ export function FinderPage() {
         )}
         {error && (
           <div className="text-center py-20 text-red">
-            Failed to load shops. Using mock data.
+            Failed to load shops.
           </div>
         )}
 
         {/* Shop List */}
         {!isLoading && (
-          <div className="space-y-2">
+          <div className="space-y-3">
             {filtered.length === 0 && (
               <div className="text-center py-20 text-text-dim">
                 {shops.length === 0
@@ -215,166 +183,110 @@ export function FinderPage() {
                   : "No shops match your filters."}
               </div>
             )}
-            {filtered.map((shop) => {
-              const hasHighStock = shop.totalStock > 5000;
-
-              return (
-                <div
-                  key={shop.listing.ssu_id}
-                  className={`bg-card border p-5 hover:bg-card-hover transition-colors relative ${
-                    !shop.listing.is_active || !shop.isOnline ? "opacity-55" : ""
-                  } ${
-                    hasHighStock
-                      ? "border-border-hover"
-                      : "border-border hover:border-border-hover"
-                  }`}
-                  style={
-                    hasHighStock
-                      ? { borderLeftWidth: "3px", borderLeftColor: "#e8a832" }
-                      : undefined
-                  }
-                >
-                  <div className="flex items-start justify-between gap-4">
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-3 mb-2 flex-wrap">
-                        {/* Status square — 10px */}
-                        <span
-                          className={`w-[10px] h-[10px] shrink-0 ${
-                            shop.isOnline
-                              ? "bg-green shadow-[0_0_6px_rgba(74,222,128,0.6)]"
-                              : "bg-red"
-                          }`}
-                        />
-                        <h3 className="text-lg font-bold text-text">
-                          {shop.listing.name}
-                        </h3>
-                        {!shop.isOnline && (
-                          <span className="text-red font-bold" style={{ fontSize: "9px", letterSpacing: "0.05em" }}>
-                            OFFLINE
-                          </span>
-                        )}
-                        <span className="text-xs text-text-dim border border-border px-2 py-0.5">
-                          {shop.listing.solar_system}
-                        </span>
-                        <span className="text-xs text-text-dim">
-                          {mockDistance(shop.listing.ssu_id)}
-                        </span>
-                        {shop.ssu?.owner && (
-                          <span className="text-xs text-text-dim">
-                            by {shop.ssu.owner.name}
-                          </span>
-                        )}
-                      </div>
-                      {/* Description: DM Sans 14px, dim color */}
-                      <p className="font-body text-text-dim text-[14px] mb-3">
-                        {shop.listing.description}
-                      </p>
-                      {/* Offers */}
-                      <div className="flex flex-wrap gap-2">
-                        {shop.listing.offers.map((offer, i) => {
-                          const inStock = shop.ssu?.inventory.items.find(
-                            (item) => item.type_id === offer.resource_type_id,
-                          );
-                          const isFilteredResource =
-                            filters.resourceTypeId === offer.resource_type_id;
-                          const info = itemInfo(offer.resource_type_id);
-                          return (
-                            <div key={i} className="relative group">
-                              <button
-                                onClick={() =>
-                                  setResourceType(
-                                    isFilteredResource
-                                      ? null
-                                      : offer.resource_type_id,
-                                  )
-                                }
-                                className={`flex items-center gap-2 border px-3 py-1.5 text-xs cursor-pointer hover:border-border-hover ${
-                                  isFilteredResource
-                                    ? "bg-amber/10 border-amber text-amber"
-                                    : "bg-bg border-border"
-                                }`}
-                              >
-                                <span
-                                  className={
-                                    isFilteredResource
-                                      ? "text-amber"
-                                      : "text-text-mid"
-                                  }
-                                >
-                                  {offer.resource_name}
-                                </span>
-                                <span className="text-amber font-bold">
-                                  {offer.price_per_unit.toLocaleString()}
-                                </span>
-                                <span className="text-text-dim">|</span>
-                                <span
-                                  className={
-                                    inStock &&
-                                    inStock.quantity >= offer.min_quantity
-                                      ? "text-green"
-                                      : "text-red"
-                                  }
-                                >
-                                  {inStock
-                                    ? `${inStock.quantity.toLocaleString()} in stock`
-                                    : "out of stock"}
-                                </span>
-                              </button>
-                              {info && (
-                                <div className="absolute bottom-full left-0 mb-1 hidden group-hover:block z-50 pointer-events-none">
-                                  <div className="bg-elevated border border-border px-3 py-2 text-xs whitespace-nowrap">
-                                    <div className="text-text font-bold mb-1">{info.name}</div>
-                                    <div className="text-text-dim">
-                                      {info.category} · {info.group}
-                                    </div>
-                                    <div className="text-text-dim">
-                                      Vol: {info.volume} · Mass: {info.mass}
-                                    </div>
-                                    <div className="text-text-dim">
-                                      ID: {info.id}
-                                    </div>
-                                  </div>
-                                </div>
-                              )}
-                            </div>
-                          );
-                        })}
-                      </div>
-                    </div>
-                    {/* Right side: fuel + stock compact */}
-                    <div className="shrink-0 flex flex-col items-end gap-1.5">
-                      <div className="flex items-center gap-2">
-                        <span className="text-[10px] text-text-dim tracking-wider">FUEL</span>
-                        <div className="w-16 h-2 bg-bg border border-border">
-                          <div
-                            className={`h-full ${
-                              shop.fuelPercent > 50
-                                ? "bg-green"
-                                : shop.fuelPercent > 20
-                                  ? "bg-orange"
-                                  : "bg-red"
-                            }`}
-                            style={{ width: `${shop.fuelPercent}%` }}
-                          />
-                        </div>
-                        <span className={`text-xs font-bold ${
-                          shop.fuelPercent > 50
-                            ? "text-green"
-                            : shop.fuelPercent > 20
-                              ? "text-orange"
-                              : "text-red"
-                        }`}>
-                          {shop.fuelPercent}%
-                        </span>
-                      </div>
-                      <span className="text-xs text-text-dim">
-                        {shop.totalStock.toLocaleString()}
+            {filtered.map((shop) => (
+              <div
+                key={shop.listing.ssu_id}
+                className={`bg-card border-2 transition-colors ${
+                  !shop.listing.is_active || !shop.isOnline
+                    ? "opacity-50 border-border"
+                    : "border-border hover:border-border-hover"
+                }`}
+              >
+                {/* Card header */}
+                <div className="px-5 pt-4 pb-3">
+                  <div className="flex items-center gap-2.5 mb-1">
+                    <span
+                      className={`w-2 h-2 shrink-0 ${
+                        shop.isOnline
+                          ? "bg-green shadow-[0_0_6px_rgba(74,222,128,0.6)]"
+                          : "bg-red"
+                      }`}
+                    />
+                    <h3 className="text-base font-bold text-text leading-tight">
+                      {shop.listing.name}
+                    </h3>
+                    {!shop.isOnline && (
+                      <span className="text-[9px] text-red font-bold tracking-wider">
+                        OFFLINE
                       </span>
-                    </div>
+                    )}
+                    {shop.listing.solar_system && (
+                      <span className="text-[10px] text-text-dim border border-border px-1.5 py-0.5 ml-1">
+                        {shop.listing.solar_system}
+                      </span>
+                    )}
                   </div>
+                  {shop.listing.description && (
+                    <p className="font-body text-text-dim text-sm leading-relaxed">
+                      {shop.listing.description}
+                    </p>
+                  )}
                 </div>
-              );
-            })}
+
+                {/* Offers */}
+                <div className="px-5 pb-4">
+                  <div className="flex flex-wrap gap-1.5">
+                    {shop.listing.offers.map((offer, i) => {
+                      const inStock = shop.ssu?.inventory.items.find(
+                        (item) => item.type_id === offer.resource_type_id,
+                      );
+                      const isFilteredResource =
+                        filters.resourceTypeId === offer.resource_type_id;
+                      const info = itemInfo(offer.resource_type_id);
+                      const stockQty = inStock?.quantity ?? 0;
+                      const hasStock = stockQty >= offer.min_quantity;
+
+                      return (
+                        <div key={i} className="relative group">
+                          <button
+                            onClick={() =>
+                              setResourceType(
+                                isFilteredResource ? null : offer.resource_type_id,
+                              )
+                            }
+                            className={`flex items-center gap-1.5 border px-2.5 py-1 text-xs cursor-pointer transition-colors ${
+                              isFilteredResource
+                                ? "bg-amber/10 border-amber"
+                                : "bg-bg border-border hover:border-border-hover"
+                            }`}
+                          >
+                            <span className={isFilteredResource ? "text-amber" : "text-text"}>
+                              {offer.resource_name}
+                            </span>
+                            <span className="text-text-dim">·</span>
+                            <span className="text-amber font-bold">
+                              {offer.price_per_unit.toLocaleString()}
+                            </span>
+                            <span className="text-text-dim text-[10px]">MIST</span>
+                            <span className="text-text-dim">·</span>
+                            <span className={`font-mono ${hasStock ? "text-green" : "text-red"}`}>
+                              {hasStock ? stockQty.toLocaleString() : "0"}
+                            </span>
+                            <span className="text-text-dim text-[10px]">in stock</span>
+                          </button>
+                          {info && (
+                            <div className="absolute bottom-full left-0 mb-1 hidden group-hover:block z-50 pointer-events-none">
+                              <div className="bg-elevated border border-border px-3 py-2 text-xs whitespace-nowrap">
+                                <div className="text-text font-bold mb-0.5">{info.name}</div>
+                                <div className="text-text-dim">
+                                  {info.category} · {info.group}
+                                </div>
+                                <div className="text-text-dim">
+                                  Vol: {info.volume} · Mass: {info.mass}
+                                </div>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+
+                  {/* Buy panel */}
+                  <BuyPanel shop={shop} onPurchase={() => refetch()} />
+                </div>
+              </div>
+            ))}
           </div>
         )}
       </main>
@@ -383,6 +295,193 @@ export function FinderPage() {
       <footer className="border-t border-border px-6 py-4 mt-12 text-center text-xs text-text-dim">
         KARUM — The Frontier's First Marketplace Network
       </footer>
+    </div>
+  );
+}
+
+// ============================================================================
+// Buy Panel
+// ============================================================================
+
+function BuyPanel({ shop, onPurchase }: { shop: MergedShop; onPurchase: () => void }) {
+  const { isConnected, handleConnect, wallets, hasEveVault, walletAddress } = useWallet();
+  const { character, loading: charLoading } = useCharacter(isConnected ? walletAddress : undefined);
+  const dAppKit = useDAppKit();
+
+  const [selectedOffer, setSelectedOffer] = useState<ShopOffer | null>(null);
+  const [quantity, setQuantity] = useState("1");
+  const [characterId, setCharacterId] = useState("");
+  const [charPrefilled, setCharPrefilled] = useState(false);
+  const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
+  const [message, setMessage] = useState("");
+
+  if (character && !charPrefilled) {
+    setCharacterId(character.objectId);
+    setCharPrefilled(true);
+  }
+
+  const inStock = selectedOffer
+    ? shop.ssu?.inventory.items.find((i) => i.type_id === selectedOffer.resource_type_id)
+    : null;
+  const maxQty = inStock?.quantity ?? 0;
+  const qty = Math.max(1, Math.round(Number(quantity) || 1));
+  const totalPrice = selectedOffer ? selectedOffer.price_per_unit * qty : 0;
+
+  async function handleBuy() {
+    if (!selectedOffer || !isConnected || !characterId.trim()) return;
+
+    setStatus("loading");
+    setMessage("Sign the transaction in your wallet...");
+
+    try {
+      const tx = new Transaction();
+      const [payment] = tx.splitCoins(tx.gas, [tx.pure.u64(totalPrice)]);
+
+      tx.moveCall({
+        target: `${VENDOR_PKG}::vendor::buy`,
+        arguments: [
+          tx.object(VENDOR_CONFIG),
+          tx.object(shop.listing.ssu_id),
+          tx.object(characterId.trim()),
+          tx.pure.u64(selectedOffer.resource_type_id),
+          tx.pure.u32(qty),
+          payment,
+        ],
+      });
+
+      const result = await dAppKit.signAndExecuteTransaction({
+        transaction: tx as any,
+      });
+
+      const digest = (result as any).digest ?? "submitted";
+      setStatus("success");
+      setMessage(`Purchased ${qty}x ${selectedOffer.resource_name}! Tx: ${digest}`);
+      setSelectedOffer(null);
+      onPurchase();
+    } catch (e: any) {
+      setStatus("error");
+      const msg = e?.message || String(e);
+      if (msg.includes("rejected") || msg.includes("denied")) {
+        setMessage("Transaction rejected by wallet.");
+      } else {
+        setMessage(msg);
+      }
+    }
+  }
+
+  if (!shop.isOnline) return null;
+
+  return (
+    <div className="mt-3 pt-3 border-t border-border/50">
+      {!isConnected ? (
+        <button
+          onClick={() => handleConnect()}
+          className="px-3 py-1.5 border border-amber/50 text-amber text-xs font-bold tracking-wider hover:bg-amber/10"
+        >
+          {hasEveVault || wallets.length > 0 ? "CONNECT WALLET TO BUY" : "INSTALL WALLET TO BUY"}
+        </button>
+      ) : !selectedOffer ? (
+        <div className="flex flex-wrap gap-1.5 items-center">
+          <span className="text-[10px] text-text-dim tracking-wider mr-1">BUY</span>
+          {shop.listing.offers.map((offer, i) => {
+            const stock = shop.ssu?.inventory.items.find(
+              (item) => item.type_id === offer.resource_type_id,
+            );
+            const available = stock && stock.quantity >= offer.min_quantity;
+            return (
+              <button
+                key={i}
+                onClick={() => available ? setSelectedOffer(offer) : undefined}
+                disabled={!available}
+                className={`px-2.5 py-1 border text-xs ${
+                  available
+                    ? "border-amber/50 text-amber hover:bg-amber/10 cursor-pointer"
+                    : "border-border text-text-dim opacity-30 cursor-not-allowed"
+                }`}
+              >
+                {offer.resource_name}
+              </button>
+            );
+          })}
+        </div>
+      ) : (
+        <div className="space-y-2.5">
+          {/* Header */}
+          <div className="flex items-center gap-3 flex-wrap">
+            <span className="text-amber font-bold text-sm">{selectedOffer.resource_name}</span>
+            <span className="text-xs text-text-dim">
+              @ {selectedOffer.price_per_unit.toLocaleString()} MIST
+            </span>
+            <button
+              onClick={() => { setSelectedOffer(null); setStatus("idle"); setMessage(""); }}
+              className="text-[10px] text-text-dim hover:text-red ml-auto tracking-wider"
+            >
+              CANCEL
+            </button>
+          </div>
+
+          {/* Qty + Total row */}
+          <div className="flex items-center gap-3 flex-wrap">
+            <div className="flex items-center gap-2">
+              <label className="text-[10px] text-text-dim tracking-wider">QTY</label>
+              <input
+                type="number"
+                value={quantity}
+                onChange={(e) => setQuantity(e.target.value)}
+                min={selectedOffer.min_quantity}
+                max={maxQty}
+                className="w-20 bg-bg border-2 border-border px-2 py-1 text-sm text-amber text-right focus:border-amber focus:outline-none"
+              />
+              <span className="text-xs text-text-dim">/ {maxQty.toLocaleString()}</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="text-[10px] text-text-dim tracking-wider">TOTAL</span>
+              <span className="text-sm text-amber font-bold">
+                {totalPrice.toLocaleString()} MIST
+              </span>
+              <span className="text-[10px] text-text-dim">
+                ({(totalPrice / 1_000_000_000).toFixed(4)} SUI)
+              </span>
+            </div>
+          </div>
+
+          {/* Character + Buy */}
+          <div className="flex gap-2 items-center">
+            <label className="text-[10px] text-text-dim tracking-wider shrink-0">CHARACTER</label>
+            <input
+              type="text"
+              placeholder={charLoading ? "Looking up..." : "0x..."}
+              value={characterId}
+              onChange={(e) => setCharacterId(e.target.value)}
+              className="flex-1 bg-bg border border-border px-2 py-1 text-xs text-text placeholder:text-text-dim focus:border-amber focus:outline-none font-mono"
+            />
+            <button
+              onClick={handleBuy}
+              disabled={status === "loading" || !characterId.trim()}
+              className="px-5 py-1 border-2 border-amber text-amber font-bold text-xs tracking-wider hover:bg-amber/10 disabled:opacity-50"
+            >
+              {status === "loading" ? "..." : "BUY"}
+            </button>
+          </div>
+          {character && characterId === character.objectId && (
+            <p className="text-[10px] text-text-dim">{character.name} (auto-detected)</p>
+          )}
+
+          {message && (
+            <p
+              className={`text-xs border px-3 py-2 ${
+                status === "success"
+                  ? "text-green border-green/30 bg-green/5"
+                  : status === "error"
+                    ? "text-red border-red/30 bg-red/5"
+                    : "text-text-mid border-border"
+              }`}
+            >
+              {message}
+            </p>
+          )}
+        </div>
+      )}
     </div>
   );
 }
