@@ -1,0 +1,8 @@
+[package]
+name = "karum"
+edition = "2024.beta"
+
+[dependencies]
+
+[addresses]
+karum = "0x0"

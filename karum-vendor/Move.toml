@@ -1,0 +1,12 @@
+[package]
+name = "karum_vendor"
+edition = "2024"
+
+[dependencies]
+world = { git = "https://github.com/evefrontier/world-contracts.git", subdir = "contracts/world", rev = "v0.0.18" }
+
+[addresses]
+karum_vendor = "0x0"
+
+[environments]
+testnet_stillness = "4c78adac"
