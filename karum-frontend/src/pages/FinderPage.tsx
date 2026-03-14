@@ -22,6 +22,7 @@ const SORT_OPTIONS: { value: SortMode; label: string }[] = [
 ];
 
 export function FinderPage() {
+  const { isConnected, eveVault, walletAddress, handleConnect, handleDisconnect } = useWallet();
   const { data: shops = [], isLoading, error, refetch, isFetching } = useShops();
   const {
     filtered,
@@ -74,6 +75,29 @@ export function FinderPage() {
               <path d="M21 12a9 9 0 0 1-15 6.7L3 16" />
             </svg>
           </button>
+
+          {isConnected ? (
+            <div className="flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-green shadow-[0_0_6px_rgba(74,222,128,0.6)]" />
+              <span className="text-xs text-text-mid font-mono">
+                {walletAddress?.slice(0, 6)}...{walletAddress?.slice(-4)}
+              </span>
+              <button
+                onClick={handleDisconnect}
+                className="text-[10px] text-text-dim hover:text-red tracking-wider cursor-pointer"
+              >
+                ✕
+              </button>
+            </div>
+          ) : (
+            <button
+              onClick={handleConnect}
+              className="px-3 py-1.5 border border-border text-xs text-text-dim hover:border-amber hover:text-amber tracking-wider cursor-pointer"
+            >
+              {eveVault ? "CONNECT" : "NO VAULT"}
+            </button>
+          )}
+
           <nav className="flex gap-4 text-sm text-text-mid">
             <a href="/" className="text-amber border-b-2 border-amber pb-1">
               FINDER
