@@ -1,45 +1,60 @@
-import { useState, useRef, useCallback } from "react";
+import { useState, useRef, useEffect, useMemo } from "react";
 import { useSearchParams } from "react-router-dom";
 import { Header } from "../components/Header";
 import { NavigationMap, type NavigationMapHandle } from "../components/navigation/NavigationMap";
 import { NavigationSidebar } from "../components/navigation/NavigationSidebar";
-import type { UniverseData } from "../services/gateway";
+import { ShopSidebar } from "../components/navigation/ShopSidebar";
+import { useShops } from "../hooks/use-shops";
+import { useUniverse } from "../hooks/use-universe";
+import { usePersisted } from "../hooks/use-persisted";
 
 export function NavigationPage() {
   const [searchParams] = useSearchParams();
   const systemParam = searchParams.get("system");
-  const [universe, setUniverse] = useState<UniverseData | null>(null);
-  const [from, setFrom] = useState<string | null>(null);
-  const [to, setTo] = useState<string | null>(null);
+  const { universe, progress } = useUniverse();
+  const [from, setFrom] = usePersisted<string | null>("karum:nav:from", null);
+  const [to, setTo] = usePersisted<string | null>("karum:nav:to", null);
   const [resolvedParam, setResolvedParam] = useState(false);
   const mapRef = useRef<NavigationMapHandle>(null);
+  const { data: shops = [] } = useShops();
 
-  const handleUniverseLoaded = useCallback((data: UniverseData) => {
-    setUniverse(data);
+  const shopSystemNames = useMemo(
+    () => shops
+      .filter((s) => s.isOnline && s.listing.is_active && s.listing.solar_system)
+      .map((s) => s.listing.solar_system),
+    [shops],
+  );
 
-    // Resolve system name from URL to system ID and set as "To"
-    if (systemParam && !resolvedParam) {
-      const match = data.solarSystems.find(
-        (s) => s.name === systemParam || String(s.id) === systemParam,
-      );
-      if (match) {
-        setTo(String(match.id));
-      }
-      setResolvedParam(true);
-    }
-  }, [systemParam, resolvedParam]);
+  // Resolve system name from URL param once universe loads
+  useEffect(() => {
+    if (!systemParam || resolvedParam || !universe) return;
+    const match = universe.solarSystems.find(
+      (s) => s.name === systemParam || String(s.id) === systemParam,
+    );
+    if (match) setTo(String(match.id));
+    setResolvedParam(true);
+  }, [systemParam, resolvedParam, universe]);
 
   return (
     <div className="h-screen bg-bg flex flex-col overflow-hidden">
       <Header activePage="/navigation" />
 
-      {/* Main content */}
       <div className="flex flex-1 min-h-0 overflow-hidden">
+        <ShopSidebar
+          onNavigateToShop={(systemName) => {
+            if (!universe) return;
+            const match = universe.solarSystems.find((s) => s.name === systemName);
+            if (match) setTo(String(match.id));
+          }}
+        />
         <NavigationMap
           ref={mapRef}
-          onUniverseLoaded={handleUniverseLoaded}
+          systems={universe?.solarSystems ?? []}
+          progress={progress}
+          fromCache={progress === null}
           fromSystemId={from}
           toSystemId={to}
+          shopSystemNames={shopSystemNames}
         />
         <NavigationSidebar
           universe={universe}
