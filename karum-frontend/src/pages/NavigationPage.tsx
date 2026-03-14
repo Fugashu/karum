@@ -2,12 +2,12 @@ import { useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { NavigationMap } from "../components/navigation/NavigationMap";
 import { NavigationSidebar } from "../components/navigation/NavigationSidebar";
-import type { SolarSystem } from "../types";
+import type { UniverseData } from "../services/gateway";
 
 export function NavigationPage() {
   const [searchParams] = useSearchParams();
   const system = searchParams.get("system");
-  const [solarSystems, setSolarSystems] = useState<SolarSystem[]>([]);
+  const [universe, setUniverse] = useState<UniverseData | null>(null);
 
   return (
     <div className="h-screen bg-bg flex flex-col overflow-hidden">
@@ -31,11 +31,11 @@ export function NavigationPage() {
 
       {/* Main content */}
       <div className="flex flex-1 min-h-0">
-        {/* Map area */}
-        <NavigationMap onSystemsLoaded={setSolarSystems} />
-
-        {/* Sidebar */}
-        <NavigationSidebar initialSystem={system} solarSystems={solarSystems} />
+        <NavigationMap onUniverseLoaded={setUniverse} />
+        <NavigationSidebar
+          initialSystem={system}
+          solarSystems={universe?.solarSystems ?? []}
+        />
       </div>
     </div>
   );

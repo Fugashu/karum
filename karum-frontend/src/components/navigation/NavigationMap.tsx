@@ -2,13 +2,12 @@ import { useState, useEffect } from "react";
 import { ProgressBar } from "../ui/ProgressBar";
 import { fetchUniverse, type UniverseData } from "../../services/gateway";
 import { cachedFetch } from "../../services/local-storage";
-import type { SolarSystem } from "../../types";
 
 interface NavigationMapProps {
-  onSystemsLoaded: (systems: SolarSystem[]) => void;
+  onUniverseLoaded: (data: UniverseData) => void;
 }
 
-export function NavigationMap({ onSystemsLoaded }: NavigationMapProps) {
+export function NavigationMap({ onUniverseLoaded }: NavigationMapProps) {
   const [universeProgress, setUniverseProgress] = useState<number | null>(null);
   const [loaded, setLoaded] = useState(false);
   const [showLoaded, setShowLoaded] = useState(false);
@@ -17,8 +16,11 @@ export function NavigationMap({ onSystemsLoaded }: NavigationMapProps) {
     cachedFetch<UniverseData>("karum:universe", () => {
       setUniverseProgress(0);
       return fetchUniverse(setUniverseProgress);
-    }).then((data) => {
-      onSystemsLoaded(data.solarSystems);
+    }).then(({ data, fromCache }) => {
+      onUniverseLoaded(data);
+
+      if (fromCache) return;
+
       setUniverseProgress(100);
       setTimeout(() => {
         setLoaded(true);

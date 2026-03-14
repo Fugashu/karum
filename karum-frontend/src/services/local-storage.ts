@@ -4,43 +4,80 @@ interface CacheEntry<T> {
 }
 
 const DEFAULT_TTL_MS = 7 * 24 * 60 * 60 * 1000; // 1 week
+const DB_NAME = "karum-cache";
+const STORE_NAME = "entries";
+const DB_VERSION = 1;
 
-export function getCached<T>(key: string): T | null {
+function openDB(): Promise<IDBDatabase> {
+  return new Promise((resolve, reject) => {
+    const req = indexedDB.open(DB_NAME, DB_VERSION);
+    req.onupgradeneeded = () => {
+      req.result.createObjectStore(STORE_NAME);
+    };
+    req.onsuccess = () => resolve(req.result);
+    req.onerror = () => reject(req.error);
+  });
+}
+
+async function idbGet<T>(key: string): Promise<T | null> {
   try {
-    const raw = localStorage.getItem(key);
-    if (!raw) return null;
-
-    const entry: CacheEntry<T> = JSON.parse(raw);
-    if (Date.now() - entry.timestamp > DEFAULT_TTL_MS) {
-      localStorage.removeItem(key);
-      return null;
-    }
-
-    return entry.data;
+    const db = await openDB();
+    return new Promise((resolve) => {
+      const tx = db.transaction(STORE_NAME, "readonly");
+      const store = tx.objectStore(STORE_NAME);
+      const req = store.get(key);
+      req.onsuccess = () => {
+        const entry = req.result as CacheEntry<T> | undefined;
+        if (!entry) return resolve(null);
+        if (Date.now() - entry.timestamp > DEFAULT_TTL_MS) {
+          // expired — clean up async
+          idbDelete(key);
+          return resolve(null);
+        }
+        resolve(entry.data);
+      };
+      req.onerror = () => resolve(null);
+    });
   } catch {
-    localStorage.removeItem(key);
     return null;
   }
 }
 
-export function setCached<T>(key: string, data: T): void {
+async function idbSet<T>(key: string, data: T): Promise<void> {
   try {
+    const db = await openDB();
     const entry: CacheEntry<T> = { data, timestamp: Date.now() };
-    localStorage.setItem(key, JSON.stringify(entry));
+    const tx = db.transaction(STORE_NAME, "readwrite");
+    tx.objectStore(STORE_NAME).put(entry, key);
   } catch (e) {
     console.warn("[local-storage] Failed to write cache:", key, e);
   }
 }
 
+async function idbDelete(key: string): Promise<void> {
+  try {
+    const db = await openDB();
+    const tx = db.transaction(STORE_NAME, "readwrite");
+    tx.objectStore(STORE_NAME).delete(key);
+  } catch {
+    // ignore
+  }
+}
+
+export interface CachedFetchResult<T> {
+  data: T;
+  fromCache: boolean;
+}
+
 /**
- * Fetch with localStorage cache. Returns cached data if fresh,
+ * Fetch with IndexedDB cache. Returns cached data if fresh,
  * otherwise calls fetcher and caches the result.
  */
-export async function cachedFetch<T>(key: string, fetcher: () => Promise<T>): Promise<T> {
-  const cached = getCached<T>(key);
-  if (cached) return cached;
+export async function cachedFetch<T>(key: string, fetcher: () => Promise<T>): Promise<CachedFetchResult<T>> {
+  const cached = await idbGet<T>(key);
+  if (cached) return { data: cached, fromCache: true };
 
   const data = await fetcher();
-  setCached(key, data);
-  return data;
+  await idbSet(key, data);
+  return { data, fromCache: false };
 }
