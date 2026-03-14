@@ -1,5 +1,6 @@
 import type { SolarSystem } from "../types";
-import type { ShipDetail, GameType } from "./gateway";
+import type { ShipDetail } from "./gateway";
+import type { GameType } from "../types";
 
 export interface RouteResult {
   distance: number;
