@@ -1,10 +1,11 @@
 import type { ReactNode } from "react";
+import { Link } from "react-router-dom";
 import { useWallet } from "../hooks/use-wallet";
 
 const NAV_ITEMS = [
-  { href: "/", label: "FINDER" },
+  { href: "/", label: "FIND" },
   { href: "/register", label: "REGISTER" },
-  { href: "/navigation", label: "NAVIGATION" },
+  { href: "/navigation", label: "NAVIGATE" },
 ];
 
 interface HeaderProps {
@@ -17,9 +18,9 @@ export function Header({ activePage, actions }: HeaderProps) {
 
   return (
     <header className="border-b-2 border-border px-6 py-4 flex items-center justify-between shrink-0">
-      <a href="/" className="text-2xl font-bold tracking-[0.12em] text-text hover:text-text no-underline">
+      <Link to="/" className="text-2xl font-bold tracking-[0.12em] text-text hover:text-text no-underline">
         K<span className="text-amber">A</span>RUM
-      </a>
+      </Link>
       <div className="flex items-center gap-4">
         {actions}
 
@@ -47,9 +48,9 @@ export function Header({ activePage, actions }: HeaderProps) {
 
         <nav className="flex gap-4 text-sm text-text-mid">
           {NAV_ITEMS.map((item) => (
-            <a
+            <Link
               key={item.href}
-              href={item.href}
+              to={item.href}
               className={
                 item.href === activePage
                   ? "text-amber border-b-2 border-amber pb-1"
@@ -57,7 +58,7 @@ export function Header({ activePage, actions }: HeaderProps) {
               }
             >
               {item.label}
-            </a>
+            </Link>
           ))}
         </nav>
       </div>

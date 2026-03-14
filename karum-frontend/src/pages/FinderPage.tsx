@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import { Transaction } from "@mysten/sui/transactions";
 import { useDAppKit } from "@mysten/dapp-kit-react";
 import { useShops } from "../hooks/use-shops";
@@ -230,12 +231,12 @@ export function FinderPage() {
                       </span>
                     )}
                     {shop.listing.solar_system && (
-                      <a
-                        href={`/navigation?system=${encodeURIComponent(shop.listing.solar_system)}&ssu=${encodeURIComponent(shop.listing.ssu_id)}`}
+                      <Link
+                        to={`/navigation?system=${encodeURIComponent(shop.listing.solar_system)}&ssu=${encodeURIComponent(shop.listing.ssu_id)}`}
                         className="text-[10px] text-text-dim border border-border px-1.5 py-0.5 ml-1 hover:border-amber hover:text-amber transition-colors no-underline cursor-pointer"
                       >
                         navigate: {shop.listing.solar_system}
-                      </a>
+                      </Link>
                     )}
                   </div>
                   {shop.listing.description && (
