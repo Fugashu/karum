@@ -70,12 +70,19 @@ export interface CachedFetchResult<T> {
 }
 
 /**
- * Fetch with IndexedDB cache. Returns cached data if fresh,
+ * Fetch with IndexedDB cache. Returns cached data if fresh and valid,
  * otherwise calls fetcher and caches the result.
+ * Optional `validate` — if it returns false, cached data is discarded.
  */
-export async function cachedFetch<T>(key: string, fetcher: () => Promise<T>): Promise<CachedFetchResult<T>> {
+export async function cachedFetch<T>(
+  key: string,
+  fetcher: () => Promise<T>,
+  validate?: (data: T) => boolean,
+): Promise<CachedFetchResult<T>> {
   const cached = await idbGet<T>(key);
-  if (cached) return { data: cached, fromCache: true };
+  if (cached && (!validate || validate(cached))) {
+    return { data: cached, fromCache: true };
+  }
 
   const data = await fetcher();
   await idbSet(key, data);

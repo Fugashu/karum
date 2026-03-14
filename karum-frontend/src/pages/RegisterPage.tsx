@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Transaction } from "@mysten/sui/transactions";
 import { useDAppKit } from "@mysten/dapp-kit-react";
 import { useWallet } from "../hooks/use-wallet";
+import { Header } from "../components/Header";
 import { useRegisterShop } from "../hooks/use-register-shop";
 import { suiClient } from "../services/sui-client";
 import { fetchSSU } from "../services/gateway";
@@ -45,15 +46,7 @@ export function RegisterPage() {
 
   return (
     <div className="min-h-screen bg-bg">
-      <header className="border-b-2 border-border px-6 py-4 flex items-center justify-between">
-        <a href="/" className="text-2xl font-bold tracking-[0.12em] text-text hover:text-text no-underline">
-          K<span className="text-amber">A</span>RUM
-        </a>
-        <nav className="flex gap-4 text-sm text-text-mid">
-          <a href="/" className="hover:text-text">FINDER</a>
-          <a href="/register" className="text-amber border-b-2 border-amber pb-1">REGISTER</a>
-        </nav>
-      </header>
+      <Header activePage="/register" />
 
       <main className="max-w-2xl mx-auto px-4 py-12">
         <h2 className="text-xl font-bold tracking-wider mb-6">

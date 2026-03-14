@@ -1,40 +1,53 @@
-import { useState } from "react";
+import { useState, useRef, useCallback } from "react";
 import { useSearchParams } from "react-router-dom";
-import { NavigationMap } from "../components/navigation/NavigationMap";
+import { Header } from "../components/Header";
+import { NavigationMap, type NavigationMapHandle } from "../components/navigation/NavigationMap";
 import { NavigationSidebar } from "../components/navigation/NavigationSidebar";
 import type { UniverseData } from "../services/gateway";
 
 export function NavigationPage() {
   const [searchParams] = useSearchParams();
-  const system = searchParams.get("system");
+  const systemParam = searchParams.get("system");
   const [universe, setUniverse] = useState<UniverseData | null>(null);
+  const [from, setFrom] = useState<string | null>(null);
+  const [to, setTo] = useState<string | null>(null);
+  const [resolvedParam, setResolvedParam] = useState(false);
+  const mapRef = useRef<NavigationMapHandle>(null);
+
+  const handleUniverseLoaded = useCallback((data: UniverseData) => {
+    setUniverse(data);
+
+    // Resolve system name from URL to system ID and set as "To"
+    if (systemParam && !resolvedParam) {
+      const match = data.solarSystems.find(
+        (s) => s.name === systemParam || String(s.id) === systemParam,
+      );
+      if (match) {
+        setTo(String(match.id));
+      }
+      setResolvedParam(true);
+    }
+  }, [systemParam, resolvedParam]);
 
   return (
     <div className="h-screen bg-bg flex flex-col overflow-hidden">
-      {/* Header */}
-      <header className="border-b-2 border-border px-6 py-4 flex items-center justify-between shrink-0">
-        <a href="/" className="text-2xl font-bold tracking-[0.12em] text-text hover:text-text no-underline">
-          K<span className="text-amber">A</span>RUM
-        </a>
-        <nav className="flex gap-4 text-sm text-text-mid">
-          <a href="/" className="hover:text-text">
-            FINDER
-          </a>
-          <a href="/navigation" className="text-amber border-b-2 border-amber pb-1">
-            NAVIGATION
-          </a>
-          <a href="/register" className="hover:text-text">
-            REGISTER
-          </a>
-        </nav>
-      </header>
+      <Header activePage="/navigation" />
 
       {/* Main content */}
-      <div className="flex flex-1 min-h-0">
-        <NavigationMap onUniverseLoaded={setUniverse} />
+      <div className="flex flex-1 min-h-0 overflow-hidden">
+        <NavigationMap
+          ref={mapRef}
+          onUniverseLoaded={handleUniverseLoaded}
+          fromSystemId={from}
+          toSystemId={to}
+        />
         <NavigationSidebar
-          initialSystem={system}
-          solarSystems={universe?.solarSystems ?? []}
+          universe={universe}
+          from={from}
+          to={to}
+          onFromChange={setFrom}
+          onToChange={setTo}
+          onFocusSystem={(systemId) => mapRef.current?.focusSystem(systemId)}
         />
       </div>
     </div>
