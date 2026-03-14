@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, useMemo, useCallback } from "react";
+import { useState, useRef, useEffect, useMemo, useCallback, type ReactNode } from "react";
 
 export interface SearchSelectItem {
   value: string;
@@ -10,7 +10,7 @@ interface SearchSelectProps {
   value: string | null;
   onChange: (value: string | null) => void;
   placeholder?: string;
-  label?: string;
+  label?: ReactNode;
 }
 
 const ITEM_HEIGHT = 32;

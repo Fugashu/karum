@@ -3,6 +3,7 @@ import { Transaction } from "@mysten/sui/transactions";
 import { useDAppKit } from "@mysten/dapp-kit-react";
 import { useShops } from "../hooks/use-shops";
 import { useFilters, type SortMode } from "../hooks/use-filters";
+import { Header } from "../components/Header";
 import { useWallet } from "../hooks/use-wallet";
 import { useCharacter } from "../hooks/use-character";
 import { useCurrentAccount } from "@mysten/dapp-kit-react";
@@ -22,7 +23,6 @@ const SORT_OPTIONS: { value: SortMode; label: string }[] = [
 ];
 
 export function FinderPage() {
-  const { isConnected, eveVault, walletAddress, handleConnect, handleDisconnect } = useWallet();
   const { data: shops = [], isLoading, error, refetch, isFetching } = useShops();
   const {
     filtered,
@@ -49,12 +49,9 @@ export function FinderPage() {
 
   return (
     <div className="min-h-screen bg-bg">
-      {/* Header */}
-      <header className="border-b-2 border-border px-6 py-4 flex items-center justify-between">
-        <a href="/" className="text-2xl font-bold tracking-[0.12em] text-text hover:text-text no-underline">
-          K<span className="text-amber">A</span>RUM
-        </a>
-        <div className="flex items-center gap-4">
+      <Header
+        activePage="/"
+        actions={
           <button
             onClick={() => refetch()}
             disabled={isFetching}
@@ -75,39 +72,8 @@ export function FinderPage() {
               <path d="M21 12a9 9 0 0 1-15 6.7L3 16" />
             </svg>
           </button>
-
-          {isConnected ? (
-            <div className="flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-green shadow-[0_0_6px_rgba(74,222,128,0.6)]" />
-              <span className="text-xs text-text-mid font-mono">
-                {walletAddress?.slice(0, 6)}...{walletAddress?.slice(-4)}
-              </span>
-              <button
-                onClick={handleDisconnect}
-                className="text-[10px] text-text-dim hover:text-red tracking-wider cursor-pointer"
-              >
-                ✕
-              </button>
-            </div>
-          ) : (
-            <button
-              onClick={handleConnect}
-              className="px-3 py-1.5 border border-border text-xs text-text-dim hover:border-amber hover:text-amber tracking-wider cursor-pointer"
-            >
-              {eveVault ? "CONNECT" : "NO VAULT"}
-            </button>
-          )}
-
-          <nav className="flex gap-4 text-sm text-text-mid">
-            <a href="/" className="text-amber border-b-2 border-amber pb-1">
-              FINDER
-            </a>
-            <a href="/register" className="hover:text-text">
-              REGISTER
-            </a>
-          </nav>
-        </div>
-      </header>
+        }
+      />
 
       <main className="max-w-4xl mx-auto px-4 py-6">
         {/* Search */}
