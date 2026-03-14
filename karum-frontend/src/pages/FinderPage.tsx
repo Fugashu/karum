@@ -57,7 +57,7 @@ export function FinderPage() {
           <button
             onClick={() => refetch()}
             disabled={isFetching}
-            className="w-8 h-8 flex items-center justify-center border border-border text-text-dim hover:border-amber hover:text-amber disabled:opacity-50"
+            className="w-8 h-8 flex items-center justify-center border border-border text-text-dim hover:border-amber hover:text-amber disabled:opacity-50 cursor-pointer"
             title="Refresh"
           >
             <svg
