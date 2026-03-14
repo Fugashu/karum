@@ -41,6 +41,8 @@ export function NavigationPage() {
 
       <div className="flex flex-1 min-h-0 overflow-hidden">
         <ShopSidebar
+          fromSystemId={from}
+          solarSystems={universe?.solarSystems ?? []}
           onNavigateToShop={(systemName) => {
             if (!universe) return;
             const match = universe.solarSystems.find((s) => s.name === systemName);

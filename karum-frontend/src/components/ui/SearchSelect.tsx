@@ -162,7 +162,14 @@ export function SearchSelect({
 
       {/* Input that doubles as trigger and search */}
       <div
-        className={`w-full flex items-center gap-2 bg-card border-2 px-3 py-2.5 transition-colors ${
+        onClick={() => {
+          if (!open) {
+            setOpen(true);
+            setSearch("");
+            setTimeout(() => inputRef.current?.focus(), 0);
+          }
+        }}
+        className={`w-full flex items-center gap-2 bg-card border-2 px-3 py-2.5 transition-colors cursor-pointer ${
           open ? "border-amber" : "border-border hover:border-border-hover"
         }`}
       >

@@ -2,24 +2,51 @@ import { useState, useMemo } from "react";
 import { useShops } from "../../hooks/use-shops";
 import { SearchSelect, type SearchSelectItem } from "../ui/SearchSelect";
 import type { MergedShop } from "../../types";
+import type { SolarSystem } from "../../types";
 
-type SortMode = "price-asc" | "price-desc" | "stock-desc" | "name-asc";
-
-const SORT_OPTIONS: { value: SortMode; label: string }[] = [
-  { value: "price-asc", label: "LOWEST PRICE" },
-  { value: "price-desc", label: "HIGHEST PRICE" },
-  { value: "stock-desc", label: "MOST STOCK" },
-  { value: "name-asc", label: "NAME A-Z" },
-];
+// price-asc → price-desc → null (off)
+type PriceSort = "asc" | "desc" | null;
+type DistSort = "asc" | "desc" | null;
 
 interface ShopSidebarProps {
   onNavigateToShop?: (systemName: string) => void;
+  fromSystemId: string | null;
+  solarSystems: SolarSystem[];
 }
 
-export function ShopSidebar({ onNavigateToShop }: ShopSidebarProps) {
+export function ShopSidebar({ onNavigateToShop, fromSystemId, solarSystems }: ShopSidebarProps) {
   const { data: shops = [], isLoading } = useShops();
   const [resourceFilter, setResourceFilter] = useState<string | null>(null);
-  const [sort, setSort] = useState<SortMode>("price-asc");
+  const [priceSort, setPriceSort] = useState<PriceSort>("asc");
+  const [distSort, setDistSort] = useState<DistSort>(null);
+  // Track which was clicked most recently — that one is primary
+  const [primary, setPrimary] = useState<"price" | "dist">("price");
+
+  // Build system lookup by name
+  const systemByName = useMemo(() => {
+    const map = new Map<string, SolarSystem>();
+    for (const s of solarSystems) map.set(s.name, s);
+    return map;
+  }, [solarSystems]);
+
+  const fromSystem = useMemo(() => {
+    if (!fromSystemId) return null;
+    return solarSystems.find((s) => String(s.id) === fromSystemId) ?? null;
+  }, [fromSystemId, solarSystems]);
+
+  function cyclePriceSort() {
+    if (priceSort === "asc") setPriceSort("desc");
+    else if (priceSort === "desc") setPriceSort(null);
+    else setPriceSort("asc");
+    setPrimary("price");
+  }
+
+  function cycleDistSort() {
+    if (distSort === "asc") setDistSort("desc");
+    else if (distSort === "desc") setDistSort(null);
+    else setDistSort("asc");
+    setPrimary("dist");
+  }
 
   // Build resource items for search select
   const resourceItems = useMemo<SearchSelectItem[]>(() => {
@@ -34,6 +61,17 @@ export function ShopSidebar({ onNavigateToShop }: ShopSidebarProps) {
       .sort((a, b) => a.label.localeCompare(b.label));
   }, [shops]);
 
+  // Calculate distance for a shop
+  function shopDistance(shop: MergedShop): number | null {
+    if (!fromSystem) return null;
+    const sys = systemByName.get(shop.listing.solar_system);
+    if (!sys) return null;
+    const dx = fromSystem.location.x - sys.location.x;
+    const dy = fromSystem.location.y - sys.location.y;
+    const dz = fromSystem.location.z - sys.location.z;
+    return Math.sqrt(dx * dx + dy * dy + dz * dz);
+  }
+
   // Filter and sort shops
   const filtered = useMemo(() => {
     let result = shops.filter((s) => s.isOnline && s.listing.is_active);
@@ -46,33 +84,43 @@ export function ShopSidebar({ onNavigateToShop }: ShopSidebarProps) {
     }
 
     result.sort((a, b) => {
-      switch (sort) {
-        case "price-asc": {
-          const aMin = minPrice(a, resourceFilter);
-          const bMin = minPrice(b, resourceFilter);
-          return aMin - bMin;
-        }
-        case "price-desc": {
-          const aMax = maxPrice(a, resourceFilter);
-          const bMax = maxPrice(b, resourceFilter);
-          return bMax - aMax;
-        }
-        case "stock-desc":
-          return b.totalStock - a.totalStock;
-        case "name-asc":
-          return a.listing.name.localeCompare(b.listing.name);
-        default:
-          return 0;
-      }
+      const comparePrice = () => {
+        if (!priceSort) return 0;
+        const aP = minPrice(a, resourceFilter);
+        const bP = minPrice(b, resourceFilter);
+        return priceSort === "asc" ? aP - bP : bP - aP;
+      };
+      const compareDist = () => {
+        if (!distSort || !fromSystem) return 0;
+        const aD = shopDistance(a) ?? Infinity;
+        const bD = shopDistance(b) ?? Infinity;
+        return distSort === "asc" ? aD - bD : bD - aD;
+      };
+
+      const [first, second] = primary === "price"
+        ? [comparePrice, compareDist]
+        : [compareDist, comparePrice];
+
+      return first() || second();
     });
 
     return result;
-  }, [shops, resourceFilter, sort]);
+  }, [shops, resourceFilter, priceSort, distSort, fromSystem]);
+
+  function formatDist(dist: number | null): string {
+    if (dist === null) return "—";
+    const au = dist * 1e-17;
+    if (au < 1) return `${(au * 1000).toFixed(0)} mAU`;
+    return `${au.toFixed(1)} AU`;
+  }
+
+  const priceSortIcon = priceSort === "asc" ? "↑" : priceSort === "desc" ? "↓" : "↕";
+  const distSortIcon = distSort === "asc" ? "↑" : distSort === "desc" ? "↓" : "↕";
 
   return (
     <aside className="w-[280px] shrink-0 bg-card border-r-2 border-border flex flex-col h-full">
       {/* Header */}
-      <div className="px-4 py-4 border-b border-border">
+      <div className="px-5 py-4 border-b border-border">
         <h2 className="text-sm font-bold tracking-[0.1em] uppercase text-text">
           Shops
         </h2>
@@ -86,20 +134,27 @@ export function ShopSidebar({ onNavigateToShop }: ShopSidebarProps) {
           onChange={setResourceFilter}
           placeholder="Filter by resource..."
         />
-        <div className="flex gap-1.5 flex-wrap">
-          {SORT_OPTIONS.map((o) => (
-            <button
-              key={o.value}
-              onClick={() => setSort(o.value)}
-              className={`px-2 py-1 text-[9px] font-bold tracking-wider border cursor-pointer ${
-                sort === o.value
-                  ? "border-amber text-amber bg-amber/10"
-                  : "border-border text-text-dim hover:border-border-hover"
-              }`}
-            >
-              {o.label}
-            </button>
-          ))}
+        <div className="flex gap-2">
+          <button
+            onClick={cyclePriceSort}
+            className={`px-2 py-1 text-[9px] font-bold tracking-wider border cursor-pointer ${
+              priceSort !== null
+                ? "border-amber text-amber bg-amber/10"
+                : "border-border text-text-dim hover:border-border-hover"
+            }`}
+          >
+            PRICE {priceSortIcon}
+          </button>
+          <button
+            onClick={cycleDistSort}
+            className={`px-2 py-1 text-[9px] font-bold tracking-wider border cursor-pointer ${
+              distSort !== null
+                ? "border-amber text-amber bg-amber/10"
+                : "border-border text-text-dim hover:border-border-hover"
+            }`}
+          >
+            DISTANCE {distSortIcon}
+          </button>
         </div>
       </div>
 
@@ -119,6 +174,7 @@ export function ShopSidebar({ onNavigateToShop }: ShopSidebarProps) {
           const offers = resourceFilter
             ? shop.listing.offers.filter((o) => String(o.resource_type_id) === resourceFilter)
             : shop.listing.offers;
+          const dist = shopDistance(shop);
 
           return (
             <button
@@ -130,11 +186,9 @@ export function ShopSidebar({ onNavigateToShop }: ShopSidebarProps) {
               <div className="flex items-center gap-2 mb-1.5">
                 <span className="w-1.5 h-1.5 shrink-0 bg-green shadow-[0_0_4px_rgba(74,222,128,0.6)]" />
                 <span className="text-xs font-bold text-text truncate">{shop.listing.name}</span>
-                {shop.listing.solar_system && (
-                  <span className="text-[9px] text-text-dim tracking-wider ml-auto shrink-0">
-                    {shop.listing.solar_system}
-                  </span>
-                )}
+                <span className="text-[9px] text-text-dim tracking-wider ml-auto shrink-0">
+                  {dist !== null ? formatDist(dist) : shop.listing.solar_system}
+                </span>
               </div>
 
               <div className="space-y-1">
@@ -180,12 +234,4 @@ function minPrice(shop: MergedShop, resourceFilter: string | null): number {
     : shop.listing.offers;
   if (offers.length === 0) return Infinity;
   return Math.min(...offers.map((o) => o.price_per_unit));
-}
-
-function maxPrice(shop: MergedShop, resourceFilter: string | null): number {
-  const offers = resourceFilter
-    ? shop.listing.offers.filter((o) => String(o.resource_type_id) === resourceFilter)
-    : shop.listing.offers;
-  if (offers.length === 0) return 0;
-  return Math.max(...offers.map((o) => o.price_per_unit));
 }
