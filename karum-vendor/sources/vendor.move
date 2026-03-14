@@ -31,6 +31,7 @@ const E_NO_PRICES: u64 = 1;
 const E_TYPE_NOT_LISTED: u64 = 2;
 const E_BELOW_MIN_QUANTITY: u64 = 3;
 const E_INSUFFICIENT_PAYMENT: u64 = 4;
+const E_CANNOT_BUY_OWN: u64 = 5;
 
 // ===================== WITNESS =====================
 
@@ -181,6 +182,7 @@ public fun buy(
     // Look up price
     assert!(table::contains(&config.prices, ssu_id), E_NO_PRICES);
     let price_list = table::borrow(&config.prices, ssu_id);
+    assert!(price_list.owner != buyer, E_CANNOT_BUY_OWN);
     assert!(vec_map::contains(&price_list.items, &type_id), E_TYPE_NOT_LISTED);
 
     let price_entry = vec_map::get(&price_list.items, &type_id);
