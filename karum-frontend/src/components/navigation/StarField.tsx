@@ -173,7 +173,7 @@ export function StarField({ systems, onHover, fromSystemId, toSystemId, shopSyst
   }, [shopSystemNames, nameToIndex, positions]);
 
   const handlePointerMove = useCallback(
-    (e: THREE.Event<PointerEvent>) => {
+    (e: any) => {
       const intersection = (e as any).intersections?.[0] ?? e;
       const index = intersection?.index;
       if (index == null || index >= systems.length) {
