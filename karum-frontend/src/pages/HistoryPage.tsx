@@ -42,7 +42,7 @@ export function HistoryPage() {
               onClick={handleConnect}
               className="px-4 py-2 border-2 border-amber text-amber text-xs font-bold tracking-wider hover:bg-amber/10 cursor-pointer"
             >
-              {eveVault ? "CONNECT WALLET" : "NO VAULT"}
+              {eveVault ? "CONNECT EVE VAULT" : "NO EVE VAULT"}
             </button>
           </div>
         )}
