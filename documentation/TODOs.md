@@ -18,5 +18,7 @@
 
 ## Dimi in progress
 
-- [ ] Solar System Reverse Mapping to Select / automatically
-  - [ ] google maps, how fast to get there
+- [x] Solar System Reverse Mapping to Select / automatically
+  - [x] google maps, how fast to get there
+  - [x] ~~finder~~ navigation page search / filter
+  - [x] ~~finder~~ navigation page sort by distance
