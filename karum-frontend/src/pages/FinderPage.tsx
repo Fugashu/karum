@@ -264,9 +264,12 @@ export function FinderPage() {
                       </span>
                     )}
                     {shop.listing.solar_system && (
-                      <span className="text-[10px] text-text-dim border border-border px-1.5 py-0.5 ml-1">
-                        {shop.listing.solar_system}
-                      </span>
+                      <a
+                        href={`/navigation?system=${encodeURIComponent(shop.listing.solar_system)}&ssu=${encodeURIComponent(shop.listing.ssu_id)}`}
+                        className="text-[10px] text-text-dim border border-border px-1.5 py-0.5 ml-1 hover:border-amber hover:text-amber transition-colors no-underline cursor-pointer"
+                      >
+                        navigate: {shop.listing.solar_system}
+                      </a>
                     )}
                   </div>
                   {shop.listing.description && (
