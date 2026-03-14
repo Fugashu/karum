@@ -1,50 +1,55 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useMemo } from "react";
 import { SearchSelect, type SearchSelectItem } from "../ui/SearchSelect";
-import { fetchShips, type Ship } from "../../services/gateway";
-import type { SolarSystem } from "../../types";
-
-const FUEL_TYPES: SearchSelectItem[] = [
-  { value: "sol", label: "SOL-1" },
-  { value: "ice", label: "ICE-2" },
-  { value: "plasma", label: "Plasma Core" },
-  { value: "hydrogen", label: "Liquid Hydrogen" },
-];
+import type { UniverseData } from "../../services/gateway";
 
 interface NavigationSidebarProps {
-  initialSystem?: string | null;
-  solarSystems: SolarSystem[];
+  universe: UniverseData | null;
+  from: string | null;
+  to: string | null;
+  onFromChange: (value: string | null) => void;
+  onToChange: (value: string | null) => void;
+  onFocusSystem: (systemId: string) => void;
 }
 
-export function NavigationSidebar({ initialSystem, solarSystems }: NavigationSidebarProps) {
-  const [ships, setShips] = useState<Ship[]>([]);
-
-  useEffect(() => {
-    fetchShips().then(setShips);
-  }, []);
-
-  const shipItems = useMemo<SearchSelectItem[]>(
-    () => ships.map((s) => ({ value: String(s.id), label: `${s.name} (${s.className})` })),
-    [ships],
-  );
+export function NavigationSidebar({
+  universe,
+  from,
+  to,
+  onFromChange,
+  onToChange,
+  onFocusSystem,
+}: NavigationSidebarProps) {
+  const solarSystems = universe?.solarSystems ?? [];
+  const shipDetails = universe?.shipDetails ?? [];
+  const gameTypes = universe?.gameTypes ?? [];
 
   const systemItems = useMemo<SearchSelectItem[]>(
     () => solarSystems.map((s) => ({ value: String(s.id), label: s.name })),
     [solarSystems],
   );
 
-  const [from, setFrom] = useState<string | null>(initialSystem ?? null);
-  const [to, setTo] = useState<string | null>(null);
-  const [shipClass, setShipClass] = useState<string | null>(null);
+  const shipItems = useMemo<SearchSelectItem[]>(
+    () => shipDetails.map((s) => ({ value: String(s.id), label: `${s.name} (${s.className})` })),
+    [shipDetails],
+  );
+
+  const fuelItems = useMemo<SearchSelectItem[]>(() => {
+    return gameTypes
+      .filter((t) => t.groupName === "Crude Fuel" || t.groupName === "Hydrogen Fuel")
+      .map((t) => ({ value: String(t.id), label: t.name }));
+  }, [gameTypes]);
+
+  const [ship, setShip] = useState<string | null>(null);
   const [fuelType, setFuelType] = useState<string | null>(null);
   const [cargoWeight, setCargoWeight] = useState(50);
   const [heatLevel, setHeatLevel] = useState(30);
 
   function handleCalculate() {
     // TODO: implement route calculation
-    console.log("Calculate route:", { from, to, shipClass, fuelType, cargoWeight, heatLevel });
+    console.log("Calculate route:", { from, to, ship, fuelType, cargoWeight, heatLevel });
   }
 
-  const canCalculate = from && to && shipClass && fuelType;
+  const canCalculate = from && to && ship && fuelType;
 
   return (
     <aside className="w-[320px] shrink-0 bg-card border-l-2 border-border flex flex-col h-full">
@@ -58,35 +63,61 @@ export function NavigationSidebar({ initialSystem, solarSystems }: NavigationSid
       {/* Form */}
       <div className="flex-1 overflow-y-auto px-5 py-4 space-y-5">
         <SearchSelect
-          label="From"
+          label={
+            <span className="flex items-center gap-2">
+              <span>From</span>
+              {from && systemItems.some((s) => s.value === from) && (
+                <button
+                  type="button"
+                  onClick={() => onFocusSystem(from)}
+                  className="text-amber hover:text-text cursor-pointer"
+                >
+                  locate
+                </button>
+              )}
+            </span>
+          }
           items={systemItems}
           value={from}
-          onChange={setFrom}
+          onChange={onFromChange}
           placeholder={solarSystems.length ? "Origin system..." : "Loading systems..."}
         />
 
         <SearchSelect
-          label="To"
+          label={
+            <span className="flex items-center gap-2">
+              <span>To</span>
+              {to && systemItems.some((s) => s.value === to) && (
+                <button
+                  type="button"
+                  onClick={() => onFocusSystem(to)}
+                  className="text-amber hover:text-text cursor-pointer"
+                >
+                  locate
+                </button>
+              )}
+            </span>
+          }
           items={systemItems}
           value={to}
-          onChange={setTo}
+          onChange={onToChange}
           placeholder={solarSystems.length ? "Destination system..." : "Loading systems..."}
         />
 
         <SearchSelect
           label="Ship"
           items={shipItems}
-          value={shipClass}
-          onChange={setShipClass}
-          placeholder={ships.length ? "Select ship..." : "Loading ships..."}
+          value={ship}
+          onChange={setShip}
+          placeholder={shipDetails.length ? "Select ship..." : "Loading ships..."}
         />
 
         <SearchSelect
           label="Fuel Type"
-          items={FUEL_TYPES}
+          items={fuelItems}
           value={fuelType}
           onChange={setFuelType}
-          placeholder="Select fuel..."
+          placeholder={fuelItems.length ? "Select fuel..." : "Loading fuels..."}
         />
 
         {/* Cargo / Weight slider */}

@@ -29,13 +29,29 @@ export interface Constellation {
   solarSystems: SolarSystem[];
 }
 
-/** Ship type from World API /v2/ships */
+/** Ship type from World API /v2/ships (list) */
 export interface Ship {
   id: number;
   name: string;
   classId: number;
   className: string;
   description: string;
+}
+
+/** Ship detail from World API /v2/ships/:id */
+export interface ShipDetail extends Ship {
+  slots: { high: number; medium: number; low: number };
+  health: { shield: number; armor: number; structure: number };
+  physics: {
+    mass: number;
+    maximumVelocity: number;
+    inertiaModifier: number;
+    heat: { heatCapacity: number; conductance: number };
+  };
+  fuelCapacity: number;
+  cpuOutput: number;
+  powergridOutput: number;
+  capacitor: { capacity: number; rechargeRate: number };
 }
 
 const WORLD_API = config.eve.worldApi;
@@ -120,6 +136,36 @@ export async function fetchShips(onProgress?: ProgressCallback): Promise<Ship[]>
   return fetchAllPaginated<Ship>("/v2/ships", 20, onProgress);
 }
 
+/** Fetch ship detail by ID. */
+export async function fetchShipDetail(id: number): Promise<ShipDetail> {
+  const res = await fetch(`${WORLD_API}/v2/ships/${id}`);
+  if (!res.ok) throw new Error(`World API /v2/ships/${id}: ${res.status}`);
+  return res.json();
+}
+
+/** Fetch all ship details. */
+export async function fetchAllShipDetails(onProgress?: ProgressCallback): Promise<ShipDetail[]> {
+  const ships = await fetchShips();
+  const details: ShipDetail[] = [];
+
+  for (let i = 0; i < ships.length; i++) {
+    try {
+      const detail = await fetchShipDetail(ships[i].id);
+      details.push(detail);
+    } catch (e) {
+      console.error(`[gateway] Failed to fetch ship detail ${ships[i].id}:`, e);
+    }
+    onProgress?.(Math.round(((i + 1) / ships.length) * 100));
+  }
+
+  return details;
+}
+
+/** Fetch all game types (items, resources, fuel etc). */
+export async function fetchAllTypes(onProgress?: ProgressCallback): Promise<GameType[]> {
+  return fetchAllPaginated<GameType>("/v2/types", 1000, onProgress);
+}
+
 /** Fetch all solar systems from World API, paginated. */
 export async function fetchAllSolarSystems(onProgress?: ProgressCallback): Promise<SolarSystem[]> {
   return fetchAllPaginated<SolarSystem>("/v2/solarsystems", 1000, onProgress);
@@ -133,16 +179,20 @@ export async function fetchAllConstellations(onProgress?: ProgressCallback): Pro
 export interface UniverseData {
   constellations: Constellation[];
   solarSystems: SolarSystem[];
+  shipDetails: ShipDetail[];
+  gameTypes: GameType[];
 }
 
 /**
- * Fetch constellations then solar systems sequentially.
- * Progress goes 0–50 for constellations, 50–100 for solar systems.
+ * Fetch all reference data sequentially.
+ * Progress: constellations 0–30, solar systems 30–70, ships 70–85, types 85–100.
  */
 export async function fetchUniverse(onProgress?: ProgressCallback): Promise<UniverseData> {
-  const constellations = await fetchAllConstellations((p) => onProgress?.(Math.round(p * 0.5)));
-  const solarSystems = await fetchAllSolarSystems((p) => onProgress?.(50 + Math.round(p * 0.5)));
-  return { constellations, solarSystems };
+  const constellations = await fetchAllConstellations((p) => onProgress?.(Math.round(p * 0.3)));
+  const solarSystems = await fetchAllSolarSystems((p) => onProgress?.(30 + Math.round(p * 0.4)));
+  const shipDetails = await fetchAllShipDetails((p) => onProgress?.(70 + Math.round(p * 0.15)));
+  const gameTypes = await fetchAllTypes((p) => onProgress?.(85 + Math.round(p * 0.15)));
+  return { constellations, solarSystems, shipDetails, gameTypes };
 }
 
 // ============================================================================

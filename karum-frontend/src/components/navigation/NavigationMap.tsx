@@ -1,65 +1,228 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback, useRef, useImperativeHandle, forwardRef } from "react";
+import { Canvas, useThree } from "@react-three/fiber";
+import { OrbitControls } from "@react-three/drei";
+import * as THREE from "three";
 import { ProgressBar } from "../ui/ProgressBar";
+import { StarField, type HoveredSystem } from "./StarField";
 import { fetchUniverse, type UniverseData } from "../../services/gateway";
 import { cachedFetch } from "../../services/local-storage";
+import type { SolarSystem } from "../../types";
+
+export interface NavigationMapHandle {
+  focusSystem: (systemId: string) => void;
+}
 
 interface NavigationMapProps {
   onUniverseLoaded: (data: UniverseData) => void;
+  fromSystemId: string | null;
+  toSystemId: string | null;
 }
 
-export function NavigationMap({ onUniverseLoaded }: NavigationMapProps) {
-  const [universeProgress, setUniverseProgress] = useState<number | null>(null);
-  const [loaded, setLoaded] = useState(false);
-  const [showLoaded, setShowLoaded] = useState(false);
+export const NavigationMap = forwardRef<NavigationMapHandle, NavigationMapProps>(
+  function NavigationMap({ onUniverseLoaded, fromSystemId, toSystemId }, ref) {
+    const [universeProgress, setUniverseProgress] = useState<number | null>(null);
+    const [loaded, setLoaded] = useState(false);
+    const [showLoaded, setShowLoaded] = useState(false);
+    const [systems, setSystems] = useState<SolarSystem[]>([]);
+    const [hovered, setHovered] = useState<HoveredSystem | null>(null);
+    const handleHover = useCallback((h: HoveredSystem | null) => setHovered(h), []);
+    const [focusTarget, setFocusTarget] = useState<string | null>(null);
+
+    useImperativeHandle(ref, () => ({
+      focusSystem(systemId: string) {
+        setFocusTarget(systemId);
+      },
+    }));
+
+    useEffect(() => {
+      cachedFetch<UniverseData>(
+        "karum:universe",
+        () => {
+          setUniverseProgress(0);
+          return fetchUniverse(setUniverseProgress);
+        },
+        (d) =>
+          Array.isArray(d.constellations) &&
+          Array.isArray(d.solarSystems) &&
+          Array.isArray(d.shipDetails) && d.shipDetails.length > 0 &&
+          Array.isArray(d.gameTypes) && d.gameTypes.length > 0,
+      ).then(({ data, fromCache }) => {
+        onUniverseLoaded(data);
+        setSystems(data.solarSystems);
+
+        if (fromCache) return;
+
+        setUniverseProgress(100);
+        setTimeout(() => {
+          setLoaded(true);
+          setTimeout(() => setShowLoaded(true), 50);
+          setTimeout(() => setShowLoaded(false), 1050);
+          setTimeout(() => {
+            setLoaded(false);
+            setUniverseProgress(null);
+          }, 1550);
+        }, 400);
+      });
+    }, []);
+
+    const [canvasReady, setCanvasReady] = useState(false);
+
+    useEffect(() => {
+      if (systems.length > 0) {
+        requestAnimationFrame(() => setCanvasReady(true));
+      }
+    }, [systems.length > 0]);
+
+    return (
+      <div className="relative flex-1 min-w-0 h-full bg-[#0f0f0f]">
+        {systems.length > 0 && (
+          <div
+            className="w-full h-full transition-opacity duration-[3000ms] ease-out"
+            style={{ opacity: canvasReady ? 1 : 0 }}
+          >
+          <Canvas
+            camera={{ position: [0, 0, 500], fov: 60, near: 0.1, far: 10000 }}
+            gl={{ antialias: false, alpha: false }}
+            style={{ background: "#0f0f0f" }}
+          >
+            <StarField
+              systems={systems}
+              onHover={handleHover}
+              fromSystemId={fromSystemId}
+              toSystemId={toSystemId}
+            />
+            <CameraController
+              systems={systems}
+              focusTarget={focusTarget}
+              onFocused={() => setFocusTarget(null)}
+            />
+            <OrbitControls
+              enableDamping
+              dampingFactor={0.1}
+              rotateSpeed={0.5}
+              zoomSpeed={1.2}
+              panSpeed={0.8}
+              minDistance={10}
+              maxDistance={3000}
+            />
+          </Canvas>
+          </div>
+        )}
+
+        {/* Hover tooltip */}
+        {hovered && (
+          <div
+            className="absolute z-20 pointer-events-none bg-elevated border border-amber px-2.5 py-1.5"
+            style={{
+              left: hovered.screenX + 12,
+              top: hovered.screenY - 8,
+            }}
+          >
+            <span className="text-[10px] text-amber font-bold tracking-wider uppercase whitespace-nowrap">
+              {hovered.name}
+            </span>
+          </div>
+        )}
+
+        {/* Bottom-right progress / toast */}
+        {(universeProgress !== null || loaded) && (
+          <div className="absolute bottom-4 right-4 w-64 z-10">
+            {!loaded ? (
+              <div className="bg-elevated border border-border px-4 py-3">
+                <ProgressBar progress={universeProgress!} label="Loading universe" />
+              </div>
+            ) : (
+              <div
+                className={`bg-elevated border border-border px-4 py-3 transition-opacity duration-500 ${
+                  showLoaded ? "opacity-100" : "opacity-0"
+                }`}
+              >
+                <span className="text-[10px] text-green tracking-wider uppercase">
+                  Map details up to date
+                </span>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+    );
+  },
+);
+
+// ==========================================================================
+// Camera controller — smoothly flies to a target system
+// ==========================================================================
+
+function CameraController({
+  systems,
+  focusTarget,
+  onFocused,
+}: {
+  systems: SolarSystem[];
+  focusTarget: string | null;
+  onFocused: () => void;
+}) {
+  const { camera } = useThree();
+  const targetRef = useRef<THREE.Vector3 | null>(null);
 
   useEffect(() => {
-    cachedFetch<UniverseData>("karum:universe", () => {
-      setUniverseProgress(0);
-      return fetchUniverse(setUniverseProgress);
-    }).then(({ data, fromCache }) => {
-      onUniverseLoaded(data);
+    if (!focusTarget) return;
 
-      if (fromCache) return;
+    const system = systems.find((s) => String(s.id) === focusTarget);
+    if (!system) {
+      onFocused();
+      return;
+    }
 
-      setUniverseProgress(100);
-      setTimeout(() => {
-        setLoaded(true);
-        setTimeout(() => setShowLoaded(true), 50);
-        setTimeout(() => setShowLoaded(false), 1050);
-        setTimeout(() => {
-          setLoaded(false);
-          setUniverseProgress(null);
-        }, 1550);
-      }, 400);
-    });
-  }, []);
+    // Compute normalized position (same logic as StarField)
+    let minX = Infinity, maxX = -Infinity;
+    let minY = Infinity, maxY = -Infinity;
+    let minZ = Infinity, maxZ = -Infinity;
 
-  return (
-    <div className="relative flex-1 h-full flex items-center justify-center">
-      <span className="text-text-dim text-sm tracking-wider uppercase">
-        Map view
-      </span>
+    for (const s of systems) {
+      if (s.location.x < minX) minX = s.location.x;
+      if (s.location.x > maxX) maxX = s.location.x;
+      if (s.location.y < minY) minY = s.location.y;
+      if (s.location.y > maxY) maxY = s.location.y;
+      if (s.location.z < minZ) minZ = s.location.z;
+      if (s.location.z > maxZ) maxZ = s.location.z;
+    }
 
-      {/* Bottom-right progress / toast */}
-      {(universeProgress !== null || loaded) && (
-        <div className="absolute bottom-4 right-4 w-64">
-          {!loaded ? (
-            <div className="bg-elevated border border-border px-4 py-3">
-              <ProgressBar progress={universeProgress!} label="Loading universe" />
-            </div>
-          ) : (
-            <div
-              className={`bg-elevated border border-border px-4 py-3 transition-opacity duration-500 ${
-                showLoaded ? "opacity-100" : "opacity-0"
-              }`}
-            >
-              <span className="text-[10px] text-green tracking-wider uppercase">
-                Map details up to date
-              </span>
-            </div>
-          )}
-        </div>
-      )}
-    </div>
-  );
+    const rangeX = maxX - minX || 1;
+    const rangeY = maxY - minY || 1;
+    const rangeZ = maxZ - minZ || 1;
+    const scale = 800;
+
+    const x = ((system.location.x - minX) / rangeX - 0.5) * scale;
+    const y = ((system.location.y - minY) / rangeY - 0.5) * scale;
+    const z = ((system.location.z - minZ) / rangeZ - 0.5) * scale;
+
+    // Camera orbits around origin. The point's position vector from origin
+    // gives us the direction. We place the camera further out along that vector.
+    const point = new THREE.Vector3(x, y, z);
+    const dir = point.clone().normalize();
+    const pullback = 200;
+    const end = point.clone().add(dir.multiplyScalar(pullback));
+
+    const start = camera.position.clone();
+    let t = 0;
+
+    function animate() {
+      t += 0.02;
+      if (t >= 1) {
+        camera.position.copy(end);
+        camera.lookAt(point);
+        onFocused();
+        return;
+      }
+      const ease = 1 - Math.pow(1 - t, 3);
+      camera.position.lerpVectors(start, end, ease);
+      camera.lookAt(point);
+      requestAnimationFrame(animate);
+    }
+
+    requestAnimationFrame(animate);
+  }, [focusTarget, systems, camera, onFocused]);
+
+  return null;
 }
