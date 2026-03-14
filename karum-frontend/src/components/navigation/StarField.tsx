@@ -14,6 +14,7 @@ interface StarFieldProps {
   onHover: (hovered: HoveredSystem | null) => void;
   fromSystemId: string | null;
   toSystemId: string | null;
+  shopSystemNames: string[];
 }
 
 function createStarTexture(): THREE.Texture {
@@ -71,8 +72,9 @@ function createHighlightTexture(color: string): THREE.Texture {
 }
 
 const starTexture = createStarTexture();
-const fromTexture = createHighlightTexture("rgba(74, 222, 128, 1)"); // green
-const toTexture = createHighlightTexture("rgba(248, 113, 113, 1)");  // red
+const fromTexture = createHighlightTexture("rgba(74, 222, 128, 1)");  // green
+const toTexture = createHighlightTexture("rgba(248, 113, 113, 1)");   // red
+const shopTexture = createHighlightTexture("rgba(96, 165, 250, 1)");  // blue
 
 // Shared normalization logic
 function normalizePositions(systems: SolarSystem[]) {
@@ -108,7 +110,7 @@ function toNormalized(
   ];
 }
 
-export function StarField({ systems, onHover, fromSystemId, toSystemId }: StarFieldProps) {
+export function StarField({ systems, onHover, fromSystemId, toSystemId, shopSystemNames }: StarFieldProps) {
   const { camera, size } = useThree();
 
   const norm = useMemo(() => normalizePositions(systems), [systems]);
@@ -124,11 +126,19 @@ export function StarField({ systems, onHover, fromSystemId, toSystemId }: StarFi
     return pos;
   }, [systems, norm]);
 
-  // Build index map for fast lookup
+  // Build index maps for fast lookup
   const idToIndex = useMemo(() => {
     const map = new Map<string, number>();
     for (let i = 0; i < systems.length; i++) {
       map.set(String(systems[i].id), i);
+    }
+    return map;
+  }, [systems]);
+
+  const nameToIndex = useMemo(() => {
+    const map = new Map<string, number>();
+    for (let i = 0; i < systems.length; i++) {
+      map.set(systems[i].name, i);
     }
     return map;
   }, [systems]);
@@ -147,6 +157,20 @@ export function StarField({ systems, onHover, fromSystemId, toSystemId }: StarFi
     if (idx == null) return null;
     return new Float32Array([positions[idx * 3], positions[idx * 3 + 1], positions[idx * 3 + 2]]);
   }, [toSystemId, idToIndex, positions]);
+
+  // Shop marker positions
+  const shopPositions = useMemo(() => {
+    if (shopSystemNames.length === 0) return null;
+    const unique = [...new Set(shopSystemNames)];
+    const coords: number[] = [];
+    for (const name of unique) {
+      const idx = nameToIndex.get(name);
+      if (idx == null) continue;
+      coords.push(positions[idx * 3], positions[idx * 3 + 1], positions[idx * 3 + 2]);
+    }
+    if (coords.length === 0) return null;
+    return new Float32Array(coords);
+  }, [shopSystemNames, nameToIndex, positions]);
 
   const handlePointerMove = useCallback(
     (e: THREE.Event<PointerEvent>) => {
@@ -230,6 +254,26 @@ export function StarField({ systems, onHover, fromSystemId, toSystemId }: StarFi
             sizeAttenuation
             transparent
             opacity={1}
+            depthWrite={false}
+            depthTest={false}
+            blending={THREE.AdditiveBlending}
+          />
+        </points>
+      )}
+
+      {/* Shop locations — blue */}
+      {shopPositions && (
+        <points>
+          <bufferGeometry>
+            <bufferAttribute attach="attributes-position" args={[shopPositions, 3]} />
+          </bufferGeometry>
+          <pointsMaterial
+            size={10}
+            map={shopTexture}
+            color="#60a5fa"
+            sizeAttenuation
+            transparent
+            opacity={0.9}
             depthWrite={false}
             depthTest={false}
             blending={THREE.AdditiveBlending}

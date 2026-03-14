@@ -1,9 +1,11 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { Transaction } from "@mysten/sui/transactions";
 import { useDAppKit } from "@mysten/dapp-kit-react";
 import { useWallet } from "../hooks/use-wallet";
 import { Header } from "../components/Header";
+import { SearchSelect, type SearchSelectItem } from "../components/ui/SearchSelect";
 import { useRegisterShop } from "../hooks/use-register-shop";
+import { useUniverse } from "../hooks/use-universe";
 import { suiClient } from "../services/sui-client";
 import { fetchSSU } from "../services/gateway";
 import { itemName } from "../services/item-types";
@@ -122,10 +124,19 @@ function SetupFlow() {
   const [actionStatus, setActionStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
   const [actionMessage, setActionMessage] = useState("");
 
+  // Solar systems for dropdown
+  const { universe } = useUniverse();
+  const solarSystems = universe?.solarSystems ?? [];
+
+  const systemItems = useMemo<SearchSelectItem[]>(
+    () => solarSystems.map((s) => ({ value: s.name, label: s.name })),
+    [solarSystems],
+  );
+
   // Registration form
   const [shopName, setShopName] = useState("");
   const [description, setDescription] = useState("");
-  const [solarSystem, setSolarSystem] = useState("");
+  const [solarSystem, setSolarSystem] = useState<string | null>(null);
   const [offers, setOffers] = useState<OfferRow[]>([]);
   const [submitStatus, setSubmitStatus] = useState<"idle" | "success" | "error">("idle");
   const [submitMessage, setSubmitMessage] = useState("");
@@ -345,7 +356,7 @@ function SetupFlow() {
         ssuId: ssuId.trim(),
         name: trimmedName,
         description: description.trim(),
-        solarSystem: solarSystem.trim(),
+        solarSystem: solarSystem ?? "",
         offers: enabledOffers.map((o) => ({
           resourceName: o.resolvedName,
           resourceTypeId: o.item.type_id,
@@ -546,13 +557,12 @@ function SetupFlow() {
 
           {/* Solar System */}
           <div className="mb-6">
-            <label className="block text-xs text-text-dim tracking-wider mb-1.5">SOLAR SYSTEM</label>
-            <input
-              type="text"
-              placeholder="e.g. EFOS-0S3"
+            <SearchSelect
+              label="Solar System"
+              items={systemItems}
               value={solarSystem}
-              onChange={(e) => setSolarSystem(e.target.value)}
-              className={inputClass}
+              onChange={setSolarSystem}
+              placeholder={solarSystems.length ? "Search solar system..." : "Loading systems..."}
             />
           </div>
 

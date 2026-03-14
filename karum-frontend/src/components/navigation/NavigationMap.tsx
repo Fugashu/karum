@@ -4,8 +4,6 @@ import { OrbitControls } from "@react-three/drei";
 import * as THREE from "three";
 import { ProgressBar } from "../ui/ProgressBar";
 import { StarField, type HoveredSystem } from "./StarField";
-import { fetchUniverse, type UniverseData } from "../../services/gateway";
-import { cachedFetch } from "../../services/local-storage";
 import type { SolarSystem } from "../../types";
 
 export interface NavigationMapHandle {
@@ -13,17 +11,18 @@ export interface NavigationMapHandle {
 }
 
 interface NavigationMapProps {
-  onUniverseLoaded: (data: UniverseData) => void;
+  systems: SolarSystem[];
+  progress: number | null;
+  fromCache: boolean;
   fromSystemId: string | null;
   toSystemId: string | null;
+  shopSystemNames: string[];
 }
 
 export const NavigationMap = forwardRef<NavigationMapHandle, NavigationMapProps>(
-  function NavigationMap({ onUniverseLoaded, fromSystemId, toSystemId }, ref) {
-    const [universeProgress, setUniverseProgress] = useState<number | null>(null);
+  function NavigationMap({ systems, progress, fromCache, fromSystemId, toSystemId, shopSystemNames }, ref) {
     const [loaded, setLoaded] = useState(false);
     const [showLoaded, setShowLoaded] = useState(false);
-    const [systems, setSystems] = useState<SolarSystem[]>([]);
     const [hovered, setHovered] = useState<HoveredSystem | null>(null);
     const handleHover = useCallback((h: HoveredSystem | null) => setHovered(h), []);
     const [focusTarget, setFocusTarget] = useState<string | null>(null);
@@ -34,36 +33,17 @@ export const NavigationMap = forwardRef<NavigationMapHandle, NavigationMapProps>
       },
     }));
 
+    // Toast after fresh load completes
     useEffect(() => {
-      cachedFetch<UniverseData>(
-        "karum:universe",
-        () => {
-          setUniverseProgress(0);
-          return fetchUniverse(setUniverseProgress);
-        },
-        (d) =>
-          Array.isArray(d.constellations) &&
-          Array.isArray(d.solarSystems) &&
-          Array.isArray(d.shipDetails) && d.shipDetails.length > 0 &&
-          Array.isArray(d.gameTypes) && d.gameTypes.length > 0,
-      ).then(({ data, fromCache }) => {
-        onUniverseLoaded(data);
-        setSystems(data.solarSystems);
+      if (fromCache || progress !== 100) return;
 
-        if (fromCache) return;
-
-        setUniverseProgress(100);
-        setTimeout(() => {
-          setLoaded(true);
-          setTimeout(() => setShowLoaded(true), 50);
-          setTimeout(() => setShowLoaded(false), 1050);
-          setTimeout(() => {
-            setLoaded(false);
-            setUniverseProgress(null);
-          }, 1550);
-        }, 400);
-      });
-    }, []);
+      setTimeout(() => {
+        setLoaded(true);
+        setTimeout(() => setShowLoaded(true), 50);
+        setTimeout(() => setShowLoaded(false), 1050);
+        setTimeout(() => setLoaded(false), 1550);
+      }, 400);
+    }, [progress, fromCache]);
 
     const [canvasReady, setCanvasReady] = useState(false);
 
@@ -90,6 +70,7 @@ export const NavigationMap = forwardRef<NavigationMapHandle, NavigationMapProps>
               onHover={handleHover}
               fromSystemId={fromSystemId}
               toSystemId={toSystemId}
+              shopSystemNames={shopSystemNames}
             />
             <CameraController
               systems={systems}
@@ -125,23 +106,24 @@ export const NavigationMap = forwardRef<NavigationMapHandle, NavigationMapProps>
         )}
 
         {/* Bottom-right progress / toast */}
-        {(universeProgress !== null || loaded) && (
+        {(progress !== null && !fromCache) && !loaded && (
           <div className="absolute bottom-4 right-4 w-64 z-10">
-            {!loaded ? (
-              <div className="bg-elevated border border-border px-4 py-3">
-                <ProgressBar progress={universeProgress!} label="Loading universe" />
-              </div>
-            ) : (
-              <div
-                className={`bg-elevated border border-border px-4 py-3 transition-opacity duration-500 ${
-                  showLoaded ? "opacity-100" : "opacity-0"
-                }`}
-              >
-                <span className="text-[10px] text-green tracking-wider uppercase">
-                  Map details up to date
-                </span>
-              </div>
-            )}
+            <div className="bg-elevated border border-border px-4 py-3">
+              <ProgressBar progress={progress} label="Loading universe" />
+            </div>
+          </div>
+        )}
+        {loaded && (
+          <div className="absolute bottom-4 right-4 w-64 z-10">
+            <div
+              className={`bg-elevated border border-border px-4 py-3 transition-opacity duration-500 ${
+                showLoaded ? "opacity-100" : "opacity-0"
+              }`}
+            >
+              <span className="text-[10px] text-green tracking-wider uppercase">
+                Map details up to date
+              </span>
+            </div>
           </div>
         )}
       </div>
@@ -163,7 +145,6 @@ function CameraController({
   onFocused: () => void;
 }) {
   const { camera } = useThree();
-  const targetRef = useRef<THREE.Vector3 | null>(null);
 
   useEffect(() => {
     if (!focusTarget) return;
@@ -174,7 +155,6 @@ function CameraController({
       return;
     }
 
-    // Compute normalized position (same logic as StarField)
     let minX = Infinity, maxX = -Infinity;
     let minY = Infinity, maxY = -Infinity;
     let minZ = Infinity, maxZ = -Infinity;
@@ -197,8 +177,6 @@ function CameraController({
     const y = ((system.location.y - minY) / rangeY - 0.5) * scale;
     const z = ((system.location.z - minZ) / rangeZ - 0.5) * scale;
 
-    // Camera orbits around origin. The point's position vector from origin
-    // gives us the direction. We place the camera further out along that vector.
     const point = new THREE.Vector3(x, y, z);
     const dir = point.clone().normalize();
     const pullback = 200;

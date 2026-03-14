@@ -1,6 +1,8 @@
-import { useState, useMemo } from "react";
+import { useMemo } from "react";
 import { SearchSelect, type SearchSelectItem } from "../ui/SearchSelect";
+import { usePersisted } from "../../hooks/use-persisted";
 import type { UniverseData } from "../../services/gateway";
+import { calculateRoute, formatTravelTime, type RouteResult } from "../../services/route-calculator";
 
 interface NavigationSidebarProps {
   universe: UniverseData | null;
@@ -39,17 +41,23 @@ export function NavigationSidebar({
       .map((t) => ({ value: String(t.id), label: t.name }));
   }, [gameTypes]);
 
-  const [ship, setShip] = useState<string | null>(null);
-  const [fuelType, setFuelType] = useState<string | null>(null);
-  const [cargoWeight, setCargoWeight] = useState(50);
-  const [heatLevel, setHeatLevel] = useState(30);
+  const [ship, setShip] = usePersisted<string | null>("karum:nav:ship", null);
+  const [fuelType, setFuelType] = usePersisted<string | null>("karum:nav:fuel", null);
+  const [cargoWeight, setCargoWeight] = usePersisted("karum:nav:cargo", 50);
+  const [heatLevel, setHeatLevel] = usePersisted("karum:nav:heat", 30);
 
-  function handleCalculate() {
-    // TODO: implement route calculation
-    console.log("Calculate route:", { from, to, ship, fuelType, cargoWeight, heatLevel });
-  }
+  const result = useMemo<RouteResult | null>(() => {
+    if (!from || !to || !ship || !fuelType) return null;
 
-  const canCalculate = from && to && ship && fuelType;
+    const fromSystem = solarSystems.find((s) => String(s.id) === from);
+    const toSystem = solarSystems.find((s) => String(s.id) === to);
+    const selectedShip = shipDetails.find((s) => String(s.id) === ship);
+    const selectedFuel = gameTypes.find((t) => String(t.id) === fuelType);
+
+    if (!fromSystem || !toSystem || !selectedShip || !selectedFuel) return null;
+
+    return calculateRoute(fromSystem, toSystem, selectedShip, selectedFuel, cargoWeight, heatLevel);
+  }, [from, to, ship, fuelType, cargoWeight, heatLevel, solarSystems, shipDetails, gameTypes]);
 
   return (
     <aside className="w-[320px] shrink-0 bg-card border-l-2 border-border flex flex-col h-full">
@@ -169,22 +177,65 @@ export function NavigationSidebar({
             <span>CRITICAL</span>
           </div>
         </div>
+
+        {/* Route Result */}
+        {result && (
+          <div className="border-2 border-border p-4 space-y-3">
+            <h3 className="text-[10px] text-text-dim tracking-wider uppercase">Route Summary</h3>
+
+            <div className="space-y-2">
+              <div className="flex justify-between items-center">
+                <span className="text-xs text-text-mid">Fuel Needed</span>
+                <span className={`text-sm font-bold ${result.canComplete ? "text-amber" : "text-red"}`}>
+                  {result.fuelNeeded.toLocaleString()}
+                </span>
+              </div>
+
+              <div className="flex justify-between items-center">
+                <span className="text-xs text-text-mid">Fuel Capacity</span>
+                <span className="text-sm text-text">{result.fuelCapacity.toLocaleString()}</span>
+              </div>
+
+              {/* Fuel bar */}
+              <div className="w-full h-2 bg-border">
+                <div
+                  className={`h-full ${result.canComplete ? "bg-amber" : "bg-red"}`}
+                  style={{ width: `${Math.min(100, (result.fuelNeeded / result.fuelCapacity) * 100)}%` }}
+                />
+              </div>
+
+              {!result.canComplete && (
+                <div className="text-[10px] text-red font-bold tracking-wider uppercase">
+                  Insufficient fuel capacity — need {(result.fuelNeeded - result.fuelCapacity).toLocaleString()} more
+                </div>
+              )}
+
+              <div className="border-t border-border/50 pt-2 space-y-1.5">
+                <div className="flex justify-between items-center">
+                  <span className="text-xs text-text-mid">Travel Time</span>
+                  <span className="text-sm text-text font-bold">{formatTravelTime(result.travelTime)}</span>
+                </div>
+
+                <div className="flex justify-between items-center">
+                  <span className="text-xs text-text-mid">Velocity</span>
+                  <span className="text-xs text-text">{result.effectiveVelocity} m/s</span>
+                </div>
+
+                <div className="flex justify-between items-center">
+                  <span className="text-xs text-text-mid">Distance</span>
+                  <span className="text-xs text-text">{result.distance.toFixed(1)} AU</span>
+                </div>
+
+                <div className="flex justify-between items-center">
+                  <span className="text-xs text-text-mid">Total Mass</span>
+                  <span className="text-xs text-text">{(result.totalMass / 1_000_000).toFixed(1)}M kg</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
-      {/* Calculate button */}
-      <div className="px-5 py-4 border-t border-border">
-        <button
-          onClick={handleCalculate}
-          disabled={!canCalculate}
-          className={`w-full py-3 border-2 text-sm font-bold tracking-[0.12em] uppercase transition-colors ${
-            canCalculate
-              ? "border-amber text-amber hover:bg-amber/10 cursor-pointer"
-              : "border-border text-text-dim cursor-not-allowed"
-          }`}
-        >
-          Calculate
-        </button>
-      </div>
     </aside>
   );
 }
