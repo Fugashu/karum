@@ -20,7 +20,57 @@ import type {
   PaginatedResponse,
 } from "../types";
 
+/** Constellation from World API /v2/constellations */
+export interface Constellation {
+  id: number;
+  name: string;
+  regionId: number;
+  location: { x: number; y: number; z: number };
+  solarSystems: SolarSystem[];
+}
+
+/** Ship type from World API /v2/ships */
+export interface Ship {
+  id: number;
+  name: string;
+  classId: number;
+  className: string;
+  description: string;
+}
+
 const WORLD_API = config.eve.worldApi;
+
+export type ProgressCallback = (progress: number) => void;
+
+/**
+ * Generic paginated fetch. Calls onProgress(0–100) after each page.
+ * Returns all items collected, even if a later page fails.
+ */
+async function fetchAllPaginated<T>(
+  endpoint: string,
+  limit: number,
+  onProgress?: ProgressCallback,
+): Promise<T[]> {
+  let offset = 0;
+  const all: T[] = [];
+
+  try {
+    while (true) {
+      const res = await fetch(`${WORLD_API}${endpoint}?limit=${limit}&offset=${offset}`);
+      if (!res.ok) throw new Error(`World API ${endpoint}: ${res.status}`);
+      const data: PaginatedResponse<T> = await res.json();
+      all.push(...data.data);
+      const total = data.metadata.total;
+      onProgress?.(Math.min(100, Math.round((all.length / total) * 100)));
+      if (all.length >= total) break;
+      offset += limit;
+    }
+  } catch (e) {
+    console.error(`[gateway] Failed to fetch ${endpoint}:`, e);
+  }
+
+  return all;
+}
 
 // ============================================================================
 // World API — Reference Data (REST)
@@ -63,6 +113,36 @@ export async function fetchSolarSystem(id: number): Promise<SolarSystem> {
   if (!res.ok)
     throw new Error(`World API /v2/solarsystems/${id}: ${res.status}`);
   return res.json();
+}
+
+/** Fetch all ships from World API, paginated. */
+export async function fetchShips(onProgress?: ProgressCallback): Promise<Ship[]> {
+  return fetchAllPaginated<Ship>("/v2/ships", 20, onProgress);
+}
+
+/** Fetch all solar systems from World API, paginated. */
+export async function fetchAllSolarSystems(onProgress?: ProgressCallback): Promise<SolarSystem[]> {
+  return fetchAllPaginated<SolarSystem>("/v2/solarsystems", 1000, onProgress);
+}
+
+/** Fetch all constellations from World API, paginated. */
+export async function fetchAllConstellations(onProgress?: ProgressCallback): Promise<Constellation[]> {
+  return fetchAllPaginated<Constellation>("/v2/constellations", 1000, onProgress);
+}
+
+export interface UniverseData {
+  constellations: Constellation[];
+  solarSystems: SolarSystem[];
+}
+
+/**
+ * Fetch constellations then solar systems sequentially.
+ * Progress goes 0–50 for constellations, 50–100 for solar systems.
+ */
+export async function fetchUniverse(onProgress?: ProgressCallback): Promise<UniverseData> {
+  const constellations = await fetchAllConstellations((p) => onProgress?.(Math.round(p * 0.5)));
+  const solarSystems = await fetchAllSolarSystems((p) => onProgress?.(50 + Math.round(p * 0.5)));
+  return { constellations, solarSystems };
 }
 
 // ============================================================================
