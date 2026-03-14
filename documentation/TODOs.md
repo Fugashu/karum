@@ -8,7 +8,6 @@
 - [ ] history of what has been bought and where
 - [ ] code -32603, message: transaction resolution failed: MoveAbort, in 2nd command, abort, code:3 in <address>:vendor::buy, instruction 70 -> happens when you probably buy lass than minimum quantity
 - [ ] Unstable Fuel in UI (the text) is rendered from a static list mapping -> dynamic item mapping
-- [ ] show the user that he has to install the wallet / connect else nothing works (currently no message at all)
 
 ## Dimi in progress
 
