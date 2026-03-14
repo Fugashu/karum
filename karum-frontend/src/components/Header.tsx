@@ -2,8 +2,7 @@ import { Link } from "react-router-dom";
 import { useWallet } from "../hooks/use-wallet";
 
 const NAV_ITEMS = [
-  { href: "/history", label: "HISTORY" },
-  { href: "/", label: "FIND" },
+  { href: "/", label: "SHOPS" },
   { href: "/navigation", label: "NAVIGATE" },
   { href: "/register", label: "REGISTER" },
 ];
@@ -39,10 +38,20 @@ export function Header({ activePage }: HeaderProps) {
         ))}
       </nav>
 
-      {/* Right — wallet */}
+      {/* Right — wallet + purchases */}
       <div className="flex items-center gap-4">
         {isConnected ? (
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-3">
+            <Link
+              to="/history"
+              className={`text-xs tracking-wider ${
+                activePage === "/history"
+                  ? "text-amber border-b-2 border-amber pb-1"
+                  : "text-text-dim hover:text-text"
+              }`}
+            >
+              PURCHASES
+            </Link>
             <span className="w-2 h-2 rounded-full bg-green shadow-[0_0_6px_rgba(74,222,128,0.6)]" />
             <span className="text-xs text-text-mid font-mono">
               {walletAddress?.slice(0, 6)}...{walletAddress?.slice(-4)}
@@ -59,7 +68,7 @@ export function Header({ activePage }: HeaderProps) {
             onClick={handleConnect}
             className="px-3 py-1.5 border border-border text-xs text-text-dim hover:border-amber hover:text-amber tracking-wider cursor-pointer"
           >
-            {eveVault ? "CONNECT" : "NO VAULT"}
+            {eveVault ? "CONNECT" : "NO EVE VAULT"}
           </button>
         )}
       </div>

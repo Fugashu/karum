@@ -602,7 +602,7 @@ function SetupFlow() {
                       type="number"
                       placeholder="0.00"
                       value={offer.pricePerUnit}
-                      onChange={(e) => updateOffer(i, "pricePerUnit", e.target.value)}
+                      onChange={(e) => updateOffer(i, "pricePerUnit", e.target.value.replace(",", "."))}
                       min="0"
                       step="0.001"
                       disabled={!offer.enabled}
