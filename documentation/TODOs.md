@@ -12,3 +12,4 @@
 ## Dimi in progress
 
 - [ ] Solar System Reverse Mapping to Select / automatically
+  - [ ] google maps, how fast to get there
