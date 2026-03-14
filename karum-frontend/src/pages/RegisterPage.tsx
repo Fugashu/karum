@@ -20,7 +20,6 @@ interface OfferRow {
   resolvedName: string;
   enabled: boolean;
   pricePerUnit: string;
-  minQuantity: string;
 }
 
 interface SSUState {
@@ -35,11 +34,10 @@ interface SSUState {
 
 export function RegisterPage() {
   const {
-    wallets,
+    eveVault,
     isConnected,
     connecting,
     walletAddress,
-    hasEveVault,
     error,
     handleConnect,
     handleDisconnect,
@@ -65,7 +63,7 @@ export function RegisterPage() {
         {/* Wallet connection */}
         <div className="bg-card border-2 border-border p-6 mb-6">
           <p className="font-body text-text-mid mb-4">
-            Connect your wallet to register an SSU as a public marketplace.
+            Connect your EVE Vault to register an SSU as a public marketplace.
             We'll guide you through each step.
           </p>
 
@@ -83,60 +81,19 @@ export function RegisterPage() {
               </button>
             </div>
           ) : (
-            <div className="space-y-3">
-              {wallets.length > 0 ? (
-                <>
-                  <button
-                    onClick={() => handleConnect()}
-                    disabled={connecting}
-                    className="px-6 py-3 border-2 border-amber text-amber font-bold text-sm tracking-wider hover:bg-amber/10 disabled:opacity-50"
-                  >
-                    {connecting
-                      ? "CONNECTING..."
-                      : hasEveVault
-                        ? "CONNECT EVE VAULT"
-                        : `CONNECT ${wallets[0].name.toUpperCase()}`}
-                  </button>
-                  {wallets.length > 1 && (
-                    <div className="pt-2">
-                      <p className="text-xs text-text-dim mb-2">Other wallets:</p>
-                      <div className="flex flex-wrap gap-2">
-                        {wallets
-                          .filter((w) =>
-                            hasEveVault
-                              ? !w.name.includes("Eve Vault") && !w.name.includes("EVE Frontier")
-                              : w !== wallets[0],
-                          )
-                          .map((w) => (
-                            <button
-                              key={w.name}
-                              onClick={() => handleConnect(w.name)}
-                              disabled={connecting}
-                              className="px-3 py-2 border border-border text-xs text-text-mid hover:border-border-hover hover:text-text disabled:opacity-50"
-                            >
-                              {w.name}
-                            </button>
-                          ))}
-                      </div>
-                    </div>
-                  )}
-                </>
+            <div>
+              {eveVault ? (
+                <button
+                  onClick={handleConnect}
+                  disabled={connecting}
+                  className="px-6 py-3 border-2 border-amber text-amber font-bold text-sm tracking-wider hover:bg-amber/10 disabled:opacity-50"
+                >
+                  {connecting ? "CONNECTING..." : "CONNECT EVE VAULT"}
+                </button>
               ) : (
-                <div className="space-y-3">
-                  <p className="text-sm text-red">No Sui wallet detected.</p>
-                  <p className="font-body text-text-dim text-sm">
-                    Install{" "}
-                    <a
-                      href="https://chromewebstore.google.com/detail/sui-wallet/opcgpfmipidbgpenhmajoajpbobppdil"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-amber underline"
-                    >
-                      Sui Wallet
-                    </a>{" "}
-                    or EVE Vault to continue.
-                  </p>
-                </div>
+                <p className="font-body text-text-dim text-sm">
+                  EVE Vault not detected. Open the EVE Frontier client to connect.
+                </p>
               )}
             </div>
           )}
@@ -259,7 +216,6 @@ function SetupFlow() {
             resolvedName: itemName(item.type_id) || `Type ${item.type_id}`,
             enabled: true,
             pricePerUnit: "",
-            minQuantity: "1",
           })),
         );
       }
@@ -361,7 +317,7 @@ function SetupFlow() {
   }
 
   // ---- Register Shop ----
-  function updateOffer(index: number, field: "enabled" | "pricePerUnit" | "minQuantity", value: string | boolean) {
+  function updateOffer(index: number, field: "enabled" | "pricePerUnit", value: string | boolean) {
     setOffers((prev) => prev.map((o, i) => (i === index ? { ...o, [field]: value } : o)));
   }
 
@@ -400,8 +356,8 @@ function SetupFlow() {
         offers: enabledOffers.map((o) => ({
           resourceName: o.resolvedName,
           resourceTypeId: o.item.type_id,
-          pricePerUnit: Math.round(Number(o.pricePerUnit)),
-          minQuantity: Math.max(1, Math.round(Number(o.minQuantity) || 1)),
+          pricePerUnit: Math.round(Number(o.pricePerUnit) * 1_000_000_000),
+          minQuantity: 1,
         })),
       });
 
@@ -638,28 +594,18 @@ function SetupFlow() {
                     <div className="text-xs text-text-dim">{offer.item.quantity.toLocaleString()} in stock</div>
                   </div>
 
-                  <div className="w-24 shrink-0">
+                  <div className="flex items-center gap-1.5 shrink-0">
                     <input
                       type="number"
-                      placeholder="Price"
+                      placeholder="0.00"
                       value={offer.pricePerUnit}
                       onChange={(e) => updateOffer(i, "pricePerUnit", e.target.value)}
-                      min="1"
+                      min="0"
+                      step="0.001"
                       disabled={!offer.enabled}
-                      className="w-full bg-bg border-2 border-border px-2 py-1.5 text-sm text-amber text-right focus:border-amber focus:outline-none disabled:opacity-30"
+                      className="w-24 bg-bg border-2 border-border px-2 py-1.5 text-sm text-amber text-right focus:border-amber focus:outline-none disabled:opacity-30"
                     />
-                  </div>
-
-                  <div className="w-20 shrink-0">
-                    <input
-                      type="number"
-                      placeholder="Min"
-                      value={offer.minQuantity}
-                      onChange={(e) => updateOffer(i, "minQuantity", e.target.value)}
-                      min="1"
-                      disabled={!offer.enabled}
-                      className="w-full bg-bg border-2 border-border px-2 py-1.5 text-sm text-text-mid text-right focus:border-amber focus:outline-none disabled:opacity-30"
-                    />
+                    <span className="text-xs text-text-dim">SUI</span>
                   </div>
                 </div>
               ))}
@@ -667,8 +613,7 @@ function SetupFlow() {
 
             <div className="flex gap-4 mt-2 text-xs text-text-dim px-12">
               <span className="flex-1" />
-              <span className="w-24 text-right">price/unit</span>
-              <span className="w-20 text-right">min qty</span>
+              <span className="w-28 text-right">price per unit</span>
             </div>
           </div>
 
