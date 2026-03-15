@@ -188,7 +188,19 @@ export function SearchSelect({
           readOnly={!open && !!selectedLabel}
           className="flex-1 bg-transparent text-xs text-text placeholder:text-text-dim focus:outline-none cursor-pointer min-w-0"
         />
-        <span className="flex items-center shrink-0">
+        <span className="flex items-center gap-1.5 shrink-0">
+          {value && (
+            <span
+              onClick={(e) => {
+                e.stopPropagation();
+                onChange(null);
+                setSearch("");
+              }}
+              className="text-text-dim hover:text-red text-[10px] cursor-pointer"
+            >
+              ✕
+            </span>
+          )}
           <svg
             width="10"
             height="6"

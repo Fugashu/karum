@@ -6,7 +6,8 @@ export type SortMode =
   | "price-asc"
   | "fuel-asc"
   | "updated-desc"
-  | "name-asc";
+  | "name-asc"
+  | "distance-asc";
 
 export interface FilterState {
   search: string;
@@ -24,7 +25,7 @@ const DEFAULT_FILTERS: FilterState = {
   sort: "stock-desc",
 };
 
-export function useFilters(shops: MergedShop[]) {
+export function useFilters(shops: MergedShop[], distanceMap?: Map<string, number>) {
   const [filters, setFilters] = useState<FilterState>(DEFAULT_FILTERS);
 
   const filtered = useMemo(() => {
@@ -79,13 +80,18 @@ export function useFilters(shops: MergedShop[]) {
           return b.listing.last_updated - a.listing.last_updated;
         case "name-asc":
           return a.listing.name.localeCompare(b.listing.name);
+        case "distance-asc": {
+          const aD = distanceMap?.get(a.listing.solar_system) ?? Infinity;
+          const bD = distanceMap?.get(b.listing.solar_system) ?? Infinity;
+          return aD - bD;
+        }
         default:
           return 0;
       }
     });
 
     return result;
-  }, [shops, filters]);
+  }, [shops, filters, distanceMap]);
 
   // Derived: unique solar systems and resource types for filter dropdowns
   const solarSystems = useMemo(
