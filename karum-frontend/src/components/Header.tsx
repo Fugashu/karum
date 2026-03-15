@@ -8,7 +8,7 @@ const NAV_ITEMS = [
 ];
 
 interface HeaderProps {
-  activePage: "/" | "/register" | "/navigation" | "/history";
+  activePage: "/" | "/register" | "/navigation" | "/history" | "/shop";
 }
 
 export function Header({ activePage }: HeaderProps) {

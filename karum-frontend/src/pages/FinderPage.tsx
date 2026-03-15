@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useCallback } from "react";
 import { Link } from "react-router-dom";
 import { Transaction } from "@mysten/sui/transactions";
 import { useDAppKit } from "@mysten/dapp-kit-react";
@@ -202,9 +202,12 @@ export function FinderPage() {
                           : "bg-red"
                       }`}
                     />
-                    <h3 className="text-base font-bold text-text leading-tight">
+                    <Link
+                      to={`/shop/${shop.listing.ssu_id}`}
+                      className="text-base font-bold text-text leading-tight hover:text-amber transition-colors no-underline"
+                    >
                       {shop.listing.name}
-                    </h3>
+                    </Link>
                     {isMine && (
                       <span className="text-[9px] text-amber font-bold tracking-wider border border-amber/40 px-1.5 py-0.5">
                         YOUR SHOP
@@ -228,7 +231,12 @@ export function FinderPage() {
                         {distLabel}
                       </span>
                     )}
+                    <ShareButton ssuId={shop.listing.ssu_id} />
                   </div>
+
+                  <span className="text-[10px] text-text-dim font-mono">
+                    {shop.listing.owner.slice(0, 6)}...{shop.listing.owner.slice(-4)}
+                  </span>
                   {shop.listing.description && (
                     <p className="font-body text-text-dim text-sm leading-relaxed">
                       {shop.listing.description}
@@ -394,7 +402,7 @@ function BuyPanel({ shop, onPurchase }: { shop: MergedShop; onPurchase: () => vo
           onClick={() => handleConnect()}
           className="px-3 py-1.5 border border-amber/50 text-amber text-xs font-bold tracking-wider hover:bg-amber/10"
         >
-          {eveVault ? "CONNECT EVE VAULT TO BUY" : "OPEN EVE CLIENT TO BUY"}
+          {eveVault ? "CONNECT EVE VAULT TO BUY" : "NO EVE VAULT"}
         </button>
       ) : !selectedOffer ? (
         <div className="flex flex-wrap gap-1.5 items-center">
@@ -496,6 +504,44 @@ function BuyPanel({ shop, onPurchase }: { shop: MergedShop; onPurchase: () => vo
         </div>
       )}
     </div>
+  );
+}
+
+// ============================================================================
+// Share Button
+// ============================================================================
+
+function ShareButton({ ssuId }: { ssuId: string }) {
+  const [copied, setCopied] = useState(false);
+
+  const handleShare = useCallback(() => {
+    const url = `${window.location.origin}/shop/${ssuId}`;
+    navigator.clipboard.writeText(url).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    });
+  }, [ssuId]);
+
+  return (
+    <button
+      onClick={(e) => { e.stopPropagation(); handleShare(); }}
+      className="ml-auto flex items-center gap-1 px-1.5 py-0.5 text-[10px] text-text-dim hover:text-amber transition-colors cursor-pointer shrink-0"
+      title="Copy shop link"
+    >
+      <svg
+        className="w-3 h-3"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="square"
+      >
+        <path d="M4 12v8h16v-8" />
+        <polyline points="16 6 12 2 8 6" />
+        <line x1="12" y1="2" x2="12" y2="15" />
+      </svg>
+      {copied ? "COPIED" : "SHARE"}
+    </button>
   );
 }
 
