@@ -23,7 +23,7 @@ export const config = {
       "https://world-api-stillness.live.tech.evefrontier.com",
   },
   karum: {
-    apiUrl: import.meta.env.VITE_KARUM_API_URL || "https://utopia.karum.fugashu.dev",
+    apiUrl: import.meta.env.VITE_KARUM_API_URL || "https://backend.karum.space",
   },
   useMockData: import.meta.env.VITE_USE_MOCK_DATA === "true",
 } as const;
