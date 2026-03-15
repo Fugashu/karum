@@ -9,6 +9,7 @@ import { usePersisted } from "../hooks/use-persisted";
 import { useShopDistances } from "../hooks/use-shop-distances";
 import { useOwnerNames } from "../hooks/use-owner-names";
 import { Header } from "../components/Header";
+import { Footer } from "../components/Footer";
 import { SearchSelect, type SearchSelectItem } from "../components/ui/SearchSelect";
 import { useCurrentAccount } from "@mysten/dapp-kit-react";
 import { useWallet } from "../hooks/use-wallet";
@@ -317,10 +318,7 @@ export function FinderPage() {
         )}
       </main>
 
-      {/* Footer */}
-      <footer className="border-t border-border px-6 py-4 mt-12 text-center text-xs text-text-dim">
-        KARUM — The Frontier's First Marketplace Network
-      </footer>
+      <Footer />
     </div>
   );
 }

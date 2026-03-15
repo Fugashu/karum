@@ -3,11 +3,14 @@ import { Transaction } from "@mysten/sui/transactions";
 import { useDAppKit } from "@mysten/dapp-kit-react";
 import { useWallet } from "../hooks/use-wallet";
 import { Header } from "../components/Header";
+import { Footer } from "../components/Footer";
 import { SearchSelect, type SearchSelectItem } from "../components/ui/SearchSelect";
 import { useRegisterShop } from "../hooks/use-register-shop";
 import { useUniverse } from "../hooks/use-universe";
+import { usePersisted } from "../hooks/use-persisted";
 import { suiClient } from "../services/sui-client";
 import { fetchSSU } from "../services/gateway";
+import { fetchShop } from "../services/registry-reader";
 import { itemName } from "../services/item-types";
 import { config } from "../config";
 import type { SSUData, InventoryItem } from "../types";
@@ -114,7 +117,13 @@ function SetupFlow() {
   const dAppKit = useDAppKit();
   const { registerShop, isPending } = useRegisterShop();
 
-  // SSU loading
+  // SSU loading — saved SSUs with migration from old string[] format
+  const [savedSSUs, setSavedSSUs] = usePersisted<{ id: string; name: string }[]>("karum:saved-ssus", [], (raw) => {
+    if (!Array.isArray(raw)) return [];
+    return raw.map((item) =>
+      typeof item === "string" ? { id: item, name: "" } : item,
+    );
+  });
   const [ssuId, setSsuId] = useState("");
   const [ssuState, setSsuState] = useState<SSUState | null>(null);
   const [loadStatus, setLoadStatus] = useState<"idle" | "loading" | "error">("idle");
@@ -142,8 +151,8 @@ function SetupFlow() {
   const [submitMessage, setSubmitMessage] = useState("");
 
   // ---- Load SSU ----
-  async function handleLoad() {
-    const id = ssuId.trim();
+  async function handleLoad(idOverride?: string) {
+    const id = (idOverride ?? ssuId).trim();
     if (!id) return;
 
     setLoadStatus("loading");
@@ -208,19 +217,43 @@ function SetupFlow() {
         networkNodeId,
       });
 
-      // Pre-fill form
+      // Pre-fill form and save to recent SSUs
       if (data.name) setShopName(data.name);
+      const ssuName = data.name || "";
+      const existingIdx = savedSSUs.findIndex((s) => s.id === id);
+      if (existingIdx >= 0) {
+        const updated = [...savedSSUs];
+        updated[existingIdx] = { id, name: ssuName };
+        setSavedSSUs(updated);
+      } else {
+        setSavedSSUs([{ id, name: ssuName }, ...savedSSUs]);
+      }
 
-      // Build offers from inventory
+      // Check if shop is already registered — prefill form
+      const existingShop = await fetchShop(id).catch(() => null);
+      if (existingShop) {
+        if (existingShop.name) setShopName(existingShop.name);
+        if (existingShop.description) setDescription(existingShop.description);
+        if (existingShop.solar_system) setSolarSystem(existingShop.solar_system);
+      }
+
+      // Build offers from inventory, prefill prices from existing registration
       const items = data.inventory.items.filter((item) => item.quantity > 0);
       if (items.length > 0) {
         setOffers(
-          items.map((item) => ({
-            item,
-            resolvedName: itemName(item.type_id) || `Type ${item.type_id}`,
-            enabled: true,
-            pricePerUnit: "",
-          })),
+          items.map((item) => {
+            const existingOffer = existingShop?.offers.find(
+              (o) => o.resource_type_id === item.type_id,
+            );
+            return {
+              item,
+              resolvedName: itemName(item.type_id) || `Type ${item.type_id}`,
+              enabled: !!existingOffer,
+              pricePerUnit: existingOffer
+                ? (existingOffer.price_per_unit / 1_000_000_000).toString()
+                : "",
+            };
+          }),
         );
       }
 
@@ -367,6 +400,13 @@ function SetupFlow() {
 
       setSubmitStatus("success");
       setSubmitMessage("Shop registered on-chain! It will appear on the Finder page.");
+      const trimmedId = ssuId.trim();
+      const existing = savedSSUs.find((s) => s.id === trimmedId);
+      if (existing) {
+        setSavedSSUs([{ id: trimmedId, name: trimmedName }, ...savedSSUs.filter((s) => s.id !== trimmedId)]);
+      } else {
+        setSavedSSUs([{ id: trimmedId, name: trimmedName }, ...savedSSUs]);
+      }
     } catch (err: any) {
       setSubmitStatus("error");
       const msg = err?.message || String(err);
@@ -397,22 +437,20 @@ function SetupFlow() {
           Paste your Smart Storage Unit's in-game assembly ID.
         </p>
 
-        <div className="flex gap-2">
-          <input
-            type="text"
-            placeholder="0x..."
-            value={ssuId}
-            onChange={(e) => setSsuId(e.target.value)}
-            className="flex-1 bg-bg border-2 border-border px-3 py-2.5 text-sm text-text placeholder:text-text-dim focus:border-amber focus:outline-none font-mono"
-          />
-          <button
-            onClick={handleLoad}
-            disabled={loadStatus === "loading" || !ssuId.trim()}
-            className="px-5 py-2.5 border-2 border-amber text-amber font-bold text-sm tracking-wider hover:bg-amber/10 disabled:opacity-50"
-          >
-            {loadStatus === "loading" ? "..." : "LOAD"}
-          </button>
-        </div>
+        <SearchSelect
+          items={savedSSUs.map((s) => ({ value: s.id, label: s.name ? `${s.name} — ${s.id.slice(0, 6)}...${s.id.slice(-4)}` : `${s.id.slice(0, 6)}...${s.id.slice(-4)}` }))}
+          value={ssuId || null}
+          onChange={(v) => {
+            const id = v ?? "";
+            setSsuId(id);
+            const saved = savedSSUs.find((s) => s.id === id);
+            if (saved) setShopName(saved.name);
+            if (id.trim()) handleLoad(id.trim());
+          }}
+          placeholder={loadStatus === "loading" ? "Loading SSU..." : "0x... or select previous SSU"}
+          allowCustom
+          inputClassName="py-2.5 text-sm"
+        />
 
         {loadError && (
           <p className="mt-3 text-sm text-red border border-red/30 bg-red/5 px-3 py-2">
@@ -563,6 +601,7 @@ function SetupFlow() {
               value={solarSystem}
               onChange={setSolarSystem}
               placeholder={solarSystems.length ? "Search solar system..." : "Loading systems..."}
+              inputClassName="py-2.5 text-sm"
             />
           </div>
 
@@ -650,6 +689,7 @@ function SetupFlow() {
           </p>
         </div>
       )}
+      <Footer />
     </div>
   );
 }

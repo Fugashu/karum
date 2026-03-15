@@ -1,5 +1,6 @@
 import { useCurrentAccount } from "@mysten/dapp-kit-react";
 import { Header } from "../components/Header";
+import { Footer } from "../components/Footer";
 import { useShops } from "../hooks/use-shops";
 import { usePurchaseHistory } from "../hooks/use-purchase-history";
 import { useWallet } from "../hooks/use-wallet";
@@ -82,6 +83,7 @@ export function HistoryPage() {
           </div>
         )}
       </main>
+      <Footer />
     </div>
   );
 }
