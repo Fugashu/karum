@@ -137,6 +137,46 @@ async def calculate(req: CalculateRequest) -> CalculateResponse:
     )
 
 
+class BatchDistanceRequest(BaseModel):
+    from_system_id: int
+    to_system_ids: list[int]
+
+
+class DistanceEntry(BaseModel):
+    system_id: int
+    distance: float
+    jumps: int
+
+
+@router.post("/distances")
+async def batch_distances(req: BatchDistanceRequest) -> list[DistanceEntry]:
+    """Calculate shortest path distances from one system to many."""
+    graph = _require_graph()
+
+    if req.from_system_id not in graph:
+        raise HTTPException(status_code=404, detail=f"System {req.from_system_id} not found")
+
+    # Single-source Dijkstra gives all distances at once — very efficient
+    try:
+        all_distances = nx.single_source_dijkstra_path_length(graph, req.from_system_id, weight="weight")
+    except Exception:
+        all_distances = {}
+
+    # Also get jump counts via BFS (unweighted shortest path)
+    try:
+        all_jumps = nx.single_source_shortest_path_length(graph, req.from_system_id)
+    except Exception:
+        all_jumps = {}
+
+    results = []
+    for tid in req.to_system_ids:
+        dist = all_distances.get(tid, -1)
+        jumps = all_jumps.get(tid, -1)
+        results.append(DistanceEntry(system_id=tid, distance=dist, jumps=jumps))
+
+    return results
+
+
 @router.get("/ships")
 async def list_ships() -> list[dict]:
     if not game_data:

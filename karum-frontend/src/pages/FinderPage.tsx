@@ -1,10 +1,14 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { Link } from "react-router-dom";
 import { Transaction } from "@mysten/sui/transactions";
 import { useDAppKit } from "@mysten/dapp-kit-react";
 import { useShops } from "../hooks/use-shops";
 import { useFilters, type SortMode } from "../hooks/use-filters";
+import { useUniverse } from "../hooks/use-universe";
+import { usePersisted } from "../hooks/use-persisted";
+import { useShopDistances } from "../hooks/use-shop-distances";
 import { Header } from "../components/Header";
+import { SearchSelect, type SearchSelectItem } from "../components/ui/SearchSelect";
 import { useCurrentAccount } from "@mysten/dapp-kit-react";
 import { useWallet } from "../hooks/use-wallet";
 import { useCharacter } from "../hooks/use-character";
@@ -19,11 +23,31 @@ const SORT_OPTIONS: { value: SortMode; label: string }[] = [
   { value: "stock-desc", label: "MOST STOCK" },
   { value: "updated-desc", label: "RECENTLY UPDATED" },
   { value: "price-asc", label: "LOWEST PRICE" },
+  { value: "distance-asc", label: "NEAREST" },
   { value: "name-asc", label: "NAME A-Z" },
 ];
 
+const DISTANCE_SCALE = 1e-17;
+
+function formatDist(raw: number): string {
+  const au = raw * DISTANCE_SCALE;
+  if (au < 1) return `${(au * 1000).toFixed(0)} mAU`;
+  return `${au.toFixed(1)} AU`;
+}
+
 export function FinderPage() {
   const { data: shops = [], isLoading, error, refetch, isFetching } = useShops();
+  const { universe } = useUniverse();
+  const [myLocation, setMyLocation] = usePersisted<string | null>("karum:my-location", null);
+
+  // Build system items for SearchSelect
+  const systemItems = useMemo<SearchSelectItem[]>(() => {
+    if (!universe) return [];
+    return universe.solarSystems.map((s) => ({ value: s.name, label: s.name }));
+  }, [universe]);
+
+  const distanceMap = useShopDistances(myLocation, universe?.solarSystems ?? [], shops);
+
   const {
     filtered,
     filters,
@@ -34,17 +58,19 @@ export function FinderPage() {
     toggleOnlineOnly,
     resourceTypes,
     solarSystems,
-  } = useFilters(shops);
+  } = useFilters(shops, distanceMap);
 
   const account = useCurrentAccount();
 
-  const activeFilterCount =
-    (filters.resourceTypeId !== null ? 1 : 0) +
-    (filters.solarSystem !== null ? 1 : 0) +
-    (filters.onlineOnly ? 1 : 0);
+  const resourceItems = useMemo<SearchSelectItem[]>(
+    () => resourceTypes.map((r) => ({ value: String(r.id), label: r.name })),
+    [resourceTypes],
+  );
 
-  const activeSelect = "bg-amber/10 border-amber text-amber";
-  const inactiveSelect = "bg-card border-border text-text-mid";
+  const sortItems = useMemo<SearchSelectItem[]>(
+    () => SORT_OPTIONS.map((o) => ({ value: o.value, label: o.label })),
+    [],
+  );
 
   return (
     <div className="min-h-screen bg-bg">
@@ -84,49 +110,32 @@ export function FinderPage() {
 
         {/* Filter row */}
         <div className="flex gap-2 mb-5 flex-wrap items-center">
-          <select
-            value={filters.resourceTypeId ?? ""}
-            onChange={(e) =>
-              setResourceType(e.target.value ? Number(e.target.value) : null)
-            }
-            className={`border-2 px-3 py-2 text-xs focus:border-amber focus:outline-none appearance-none cursor-pointer min-w-[160px] ${
-              filters.resourceTypeId !== null ? activeSelect : inactiveSelect
-            }`}
-          >
-            <option value="">ALL RESOURCES</option>
-            {resourceTypes.map((r) => (
-              <option key={r.id} value={r.id}>
-                {r.name}
-              </option>
-            ))}
-          </select>
+          <div className="min-w-[180px]">
+            <SearchSelect
+              items={systemItems}
+              value={myLocation}
+              onChange={setMyLocation}
+              placeholder={universe ? "My location..." : "Loading..."}
+            />
+          </div>
 
-          <select
-            value={filters.solarSystem ?? ""}
-            onChange={(e) => setSolarSystem(e.target.value || null)}
-            className={`border-2 px-3 py-2 text-xs focus:border-amber focus:outline-none appearance-none cursor-pointer min-w-[140px] ${
-              filters.solarSystem !== null ? activeSelect : inactiveSelect
-            }`}
-          >
-            <option value="">ALL SYSTEMS</option>
-            {solarSystems.map((s) => (
-              <option key={s} value={s}>
-                {s}
-              </option>
-            ))}
-          </select>
+          <div className="min-w-[160px]">
+            <SearchSelect
+              items={resourceItems}
+              value={filters.resourceTypeId !== null ? String(filters.resourceTypeId) : null}
+              onChange={(v) => setResourceType(v ? Number(v) : null)}
+              placeholder="All resources..."
+            />
+          </div>
 
-          <select
-            value={filters.sort}
-            onChange={(e) => setSort(e.target.value as SortMode)}
-            className="bg-card border-2 border-border px-3 py-2 text-xs text-text-mid focus:border-amber focus:outline-none appearance-none cursor-pointer min-w-[150px]"
-          >
-            {SORT_OPTIONS.map((o) => (
-              <option key={o.value} value={o.value}>
-                {o.label}
-              </option>
-            ))}
-          </select>
+          <div className="min-w-[150px]">
+            <SearchSelect
+              items={sortItems}
+              value={filters.sort}
+              onChange={(v) => setSort((v as SortMode) ?? "stock-desc")}
+              placeholder="Sort by..."
+            />
+          </div>
 
           <button
             onClick={toggleOnlineOnly}
@@ -139,29 +148,11 @@ export function FinderPage() {
             ONLINE ONLY
           </button>
 
-          {activeFilterCount > 0 && (
-            <button
-              onClick={() => {
-                setResourceType(null);
-                setSolarSystem(null);
-                if (filters.onlineOnly) toggleOnlineOnly();
-              }}
-              className="px-2 py-2 text-xs text-text-dim hover:text-red"
-            >
-              CLEAR ({activeFilterCount})
-            </button>
-          )}
 
           {/* Inline stats */}
-          <div className="ml-auto flex gap-4 text-xs text-text-dim">
+          <div className="ml-auto flex gap-4 text-xs text-text-dim items-center">
             <span>
-              {filtered.length}{filtered.length !== shops.length ? ` / ${shops.length}` : ""} shops
-            </span>
-            <span className="text-green">
-              {filtered.filter((s) => s.isOnline).length} online
-            </span>
-            <span>
-              {new Set(filtered.flatMap((s) => s.listing.offers.map((o) => o.resource_type_id))).size} resources
+              <span className="text-green">{filtered.filter((s) => s.isOnline).length}</span>/{filtered.length} online
             </span>
           </div>
         </div>
@@ -190,6 +181,8 @@ export function FinderPage() {
             )}
             {filtered.map((shop) => {
               const isMine = account?.address === shop.listing.owner;
+              const dist = distanceMap?.get(shop.listing.solar_system);
+              const distLabel = dist != null ? formatDist(dist) : null;
               return (
               <div
                 key={shop.listing.ssu_id}
@@ -229,8 +222,13 @@ export function FinderPage() {
                         to={`/navigation?system=${encodeURIComponent(shop.listing.solar_system)}&ssu=${encodeURIComponent(shop.listing.ssu_id)}`}
                         className="text-[10px] text-text-dim border border-border px-1.5 py-0.5 ml-1 hover:border-amber hover:text-amber transition-colors no-underline cursor-pointer"
                       >
-                        navigate: {shop.listing.solar_system}
+                        {shop.listing.solar_system}
                       </Link>
+                    )}
+                    {distLabel && (
+                      <span className="text-[10px] text-text-dim ml-1">
+                        {distLabel}
+                      </span>
                     )}
                   </div>
                   {shop.listing.description && (
