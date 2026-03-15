@@ -53,11 +53,9 @@ export function FinderPage() {
     filters,
     setSearch,
     setResourceType,
-    setSolarSystem,
     setSort,
     toggleOnlineOnly,
     resourceTypes,
-    solarSystems,
   } = useFilters(shops, distanceMap);
 
   const account = useCurrentAccount();
