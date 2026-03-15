@@ -12,10 +12,12 @@
   - [ ] notification system to seller that something has been bought? -> would be cool, on chain?
 
 - [ ] sponsored transactions (let us sponsor the tx when registering a player ssu?)
+
 ## New Ideas
 
 - [ ] Contract extension to function also as a lending system vs. only buy
 - [ ] Casino Contract
+
 ## Dimi in progress
 
 - [x] Solar System Reverse Mapping to Select / automatically
@@ -23,4 +25,4 @@
   - [x] ~~finder~~ navigation page search / filter
   - [x] ~~finder~~ navigation page sort by distance
   - [x] backend with dijkstra to find shortest path
-  - [ ] finder add starting position -> sorting by distance
+  - [x] finder add starting position -> sorting by distance
