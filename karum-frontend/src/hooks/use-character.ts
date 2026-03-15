@@ -101,7 +101,7 @@ async function lookupCharacter(
     if (charAddr === walletLower) {
       return {
         objectId: node.address,
-        name: fields.name ?? "",
+        name: fields.metadata?.name ?? "",
       };
     }
   }

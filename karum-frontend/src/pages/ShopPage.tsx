@@ -5,6 +5,7 @@ import { useDAppKit } from "@mysten/dapp-kit-react";
 import { useShops } from "../hooks/use-shops";
 import { useWallet } from "../hooks/use-wallet";
 import { useCharacter } from "../hooks/use-character";
+import { useOwnerNames } from "../hooks/use-owner-names";
 import { Header } from "../components/Header";
 import { itemInfo } from "../services/item-types";
 import { config } from "../config";
@@ -16,6 +17,7 @@ const VENDOR_CONFIG = config.vendor.configId;
 export function ShopPage() {
   const { ssuId } = useParams<{ ssuId: string }>();
   const { data: shops = [], isLoading } = useShops();
+  const { data: ownerNames } = useOwnerNames();
 
   const shop = useMemo(
     () => shops.find((s) => s.listing.ssu_id === ssuId) ?? null,
@@ -54,7 +56,7 @@ export function ShopPage() {
           </div>
         )}
 
-        {shop && <ShopDetail shop={shop} />}
+        {shop && <ShopDetail shop={shop} ownerNames={ownerNames} />}
       </main>
     </div>
   );
@@ -64,7 +66,7 @@ export function ShopPage() {
 // Shop Detail
 // ============================================================================
 
-function ShopDetail({ shop }: { shop: MergedShop }) {
+function ShopDetail({ shop, ownerNames }: { shop: MergedShop; ownerNames?: Map<string, string> }) {
   const { isConnected, walletAddress } = useWallet();
   const isMine = isConnected && walletAddress === shop.listing.owner;
 
@@ -154,9 +156,11 @@ function ShopDetail({ shop }: { shop: MergedShop }) {
           </span>
           <span>
             Owner:{" "}
-            <span className="font-mono">
-              {shop.listing.owner.slice(0, 6)}...{shop.listing.owner.slice(-4)}
-            </span>
+            {ownerNames?.get(shop.listing.owner.toLowerCase()) || (
+              <span className="font-mono">
+                {shop.listing.owner.slice(0, 6)}...{shop.listing.owner.slice(-4)}
+              </span>
+            )}
           </span>
         </div>
       </div>
