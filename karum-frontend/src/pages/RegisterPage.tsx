@@ -232,7 +232,13 @@ function SetupFlow() {
       // Check if shop is already registered — prefill form
       const existingShop = await fetchShop(id).catch(() => null);
       if (existingShop) {
-        if (existingShop.name) setShopName(existingShop.name);
+        if (existingShop.name) {
+          setShopName(existingShop.name);
+          // Update saved SSU name from registry (more accurate than on-chain name)
+          setSavedSSUs((prev) =>
+            prev.map((s) => s.id === id ? { ...s, name: existingShop.name } : s),
+          );
+        }
         if (existingShop.description) setDescription(existingShop.description);
         if (existingShop.solar_system) setSolarSystem(existingShop.solar_system);
       }
