@@ -26,3 +26,6 @@
   - [x] ~~finder~~ navigation page sort by distance
   - [x] backend with dijkstra to find shortest path
   - [x] finder add starting position -> sorting by distance
+  - [ ] disable mobile navigation
+- [ ] discord bot
+- [ ] find whether ui can know whether it is rendered inside the SSU
