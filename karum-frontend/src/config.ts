@@ -22,5 +22,8 @@ export const config = {
       import.meta.env.VITE_WORLD_API ||
       "https://world-api-stillness.live.tech.evefrontier.com",
   },
+  karum: {
+    apiUrl: import.meta.env.VITE_KARUM_API_URL || "http://localhost:8000",
+  },
   useMockData: import.meta.env.VITE_USE_MOCK_DATA === "true",
 } as const;

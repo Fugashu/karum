@@ -187,7 +187,8 @@ export function ShopSidebar({ onNavigateToShop, fromSystemId, solarSystems }: Sh
                 <span className="w-1.5 h-1.5 shrink-0 bg-green shadow-[0_0_4px_rgba(74,222,128,0.6)]" />
                 <span className="text-xs font-bold text-text truncate">{shop.listing.name}</span>
                 <span className="text-[9px] text-text-dim tracking-wider ml-auto shrink-0">
-                  {dist !== null ? formatDist(dist) : shop.listing.solar_system}
+                  {shop.listing.solar_system}
+                  {dist !== null && ` · ${formatDist(dist)}`}
                 </span>
               </div>
 

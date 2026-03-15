@@ -17,10 +17,11 @@ interface NavigationMapProps {
   fromSystemId: string | null;
   toSystemId: string | null;
   shopSystemNames: string[];
+  routePath: number[] | null;
 }
 
 export const NavigationMap = forwardRef<NavigationMapHandle, NavigationMapProps>(
-  function NavigationMap({ systems, progress, fromCache, fromSystemId, toSystemId, shopSystemNames }, ref) {
+  function NavigationMap({ systems, progress, fromCache, fromSystemId, toSystemId, shopSystemNames, routePath }, ref) {
     const [loaded, setLoaded] = useState(false);
     const [showLoaded, setShowLoaded] = useState(false);
     const [hovered, setHovered] = useState<HoveredSystem | null>(null);
@@ -71,6 +72,7 @@ export const NavigationMap = forwardRef<NavigationMapHandle, NavigationMapProps>
               fromSystemId={fromSystemId}
               toSystemId={toSystemId}
               shopSystemNames={shopSystemNames}
+              routePath={routePath}
             />
             <CameraController
               systems={systems}
@@ -83,6 +85,7 @@ export const NavigationMap = forwardRef<NavigationMapHandle, NavigationMapProps>
               rotateSpeed={0.5}
               zoomSpeed={1.2}
               panSpeed={0.8}
+              screenSpacePanning
               minDistance={10}
               maxDistance={3000}
             />

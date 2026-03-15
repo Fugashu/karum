@@ -15,6 +15,7 @@ interface StarFieldProps {
   fromSystemId: string | null;
   toSystemId: string | null;
   shopSystemNames: string[];
+  routePath: number[] | null;
 }
 
 function createStarTexture(): THREE.Texture {
@@ -110,7 +111,7 @@ function toNormalized(
   ];
 }
 
-export function StarField({ systems, onHover, fromSystemId, toSystemId, shopSystemNames }: StarFieldProps) {
+export function StarField({ systems, onHover, fromSystemId, toSystemId, shopSystemNames, routePath }: StarFieldProps) {
   const { camera, size } = useThree();
 
   const norm = useMemo(() => normalizePositions(systems), [systems]);
@@ -171,6 +172,19 @@ export function StarField({ systems, onHover, fromSystemId, toSystemId, shopSyst
     if (coords.length === 0) return null;
     return new Float32Array(coords);
   }, [shopSystemNames, nameToIndex, positions]);
+
+  // Route path line positions
+  const routeLinePositions = useMemo(() => {
+    if (!routePath || routePath.length < 2) return null;
+    const coords: number[] = [];
+    for (const sysId of routePath) {
+      const idx = idToIndex.get(String(sysId));
+      if (idx == null) continue;
+      coords.push(positions[idx * 3], positions[idx * 3 + 1], positions[idx * 3 + 2]);
+    }
+    if (coords.length < 6) return null; // need at least 2 points
+    return new Float32Array(coords);
+  }, [routePath, idToIndex, positions]);
 
   const handlePointerMove = useCallback(
     (e: any) => {
@@ -279,6 +293,21 @@ export function StarField({ systems, onHover, fromSystemId, toSystemId, shopSyst
             blending={THREE.AdditiveBlending}
           />
         </points>
+      )}
+
+      {/* Route path line */}
+      {routeLinePositions && (
+        <line>
+          <bufferGeometry>
+            <bufferAttribute attach="attributes-position" args={[routeLinePositions, 3]} />
+          </bufferGeometry>
+          <lineBasicMaterial
+            color="#e8a832"
+            transparent
+            opacity={0.6}
+            depthTest={false}
+          />
+        </line>
       )}
     </>
   );
