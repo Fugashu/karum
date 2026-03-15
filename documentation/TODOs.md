@@ -7,7 +7,7 @@
 - [ ] allow zooming ui for ingame stuff
 - [x] history of what has been bought and where
 - [x] code -32603, message: transaction resolution failed: MoveAbort, in 2nd command, abort, code:3 in <address>:vendor::buy, instruction 70 -> happens when you probably buy lass than minimum quantity -> i removed minimum quantity, there is no use for it, since the seller doesn't need to be physically there or online
-- [ ] Unstable Fuel in UI (the text) is rendered from a static list mapping -> dynamic item mapping
+- [x] Unstable Fuel in UI (the text) is rendered from a static list mapping -> dynamic item mapping
 - [x] test if the seller received the sui
   - [ ] notification system to seller that something has been bought? -> would be cool, on chain?
 
