@@ -11,6 +11,10 @@ interface SearchSelectProps {
   onChange: (value: string | null) => void;
   placeholder?: string;
   label?: ReactNode;
+  /** Allow free-text input — value doesn't have to be in items */
+  allowCustom?: boolean;
+  /** Extra classes for the input container (e.g. to change height) */
+  inputClassName?: string;
 }
 
 const ITEM_HEIGHT = 32;
@@ -24,6 +28,8 @@ export function SearchSelect({
   onChange,
   placeholder = "Select...",
   label,
+  allowCustom = false,
+  inputClassName,
 }: SearchSelectProps) {
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");
@@ -55,8 +61,8 @@ export function SearchSelect({
     for (const item of items) {
       if (item.value === value) return item.label;
     }
-    return null;
-  }, [items, value]);
+    return allowCustom ? value : null;
+  }, [items, value, allowCustom]);
 
   useEffect(() => {
     setHighlightIndex(0);
@@ -64,19 +70,26 @@ export function SearchSelect({
     if (listRef.current) listRef.current.scrollTop = 0;
   }, [filtered]);
 
+  function commitAndClose() {
+    if (allowCustom && search.trim()) {
+      onChange(search.trim());
+    }
+    setOpen(false);
+    setSearch("");
+  }
+
   // Close on outside click
   useEffect(() => {
     function handleClick(e: MouseEvent) {
       if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
-        setOpen(false);
-        setSearch("");
+        commitAndClose();
       }
     }
     if (open) {
       document.addEventListener("mousedown", handleClick);
       return () => document.removeEventListener("mousedown", handleClick);
     }
-  }, [open]);
+  }, [open, search]);
 
   // Scroll highlight into view
   useEffect(() => {
@@ -130,6 +143,10 @@ export function SearchSelect({
           onChange(filtered[highlightIndex].value);
           setOpen(false);
           setSearch("");
+        } else if (allowCustom && search.trim()) {
+          onChange(search.trim());
+          setOpen(false);
+          setSearch("");
         }
         break;
       case "Escape":
@@ -169,9 +186,9 @@ export function SearchSelect({
             setTimeout(() => inputRef.current?.focus(), 0);
           }
         }}
-        className={`w-full flex items-center gap-2 bg-card border-2 px-3 py-2.5 transition-colors cursor-pointer ${
-          open ? "border-amber" : "border-border hover:border-border-hover"
-        }`}
+        className={`w-full flex items-center gap-2 bg-bg border-2 px-3 transition-colors cursor-pointer ${
+          inputClassName ?? "py-2.5"
+        } ${open ? "border-amber" : "border-border hover:border-border-hover"}`}
       >
         <input
           ref={inputRef}
@@ -186,7 +203,7 @@ export function SearchSelect({
           onKeyDown={handleKeyDown}
           placeholder={placeholder}
           readOnly={!open && !!selectedLabel}
-          className="flex-1 bg-transparent text-xs text-text placeholder:text-text-dim focus:outline-none cursor-pointer min-w-0"
+          className={`flex-1 bg-transparent text-text placeholder:text-text-dim focus:outline-none cursor-pointer min-w-0 ${inputClassName ? "" : "text-xs"}`}
         />
         <span className="flex items-center gap-1.5 shrink-0">
           {value && (

@@ -1,10 +1,16 @@
 import { useState, useCallback, type Dispatch, type SetStateAction } from "react";
 
-export function usePersisted<T>(key: string, defaultValue: T): [T, Dispatch<SetStateAction<T>>] {
+export function usePersisted<T>(
+  key: string,
+  defaultValue: T,
+  migrate?: (raw: unknown) => T,
+): [T, Dispatch<SetStateAction<T>>] {
   const [value, setValue] = useState<T>(() => {
     try {
       const raw = localStorage.getItem(key);
-      return raw !== null ? JSON.parse(raw) : defaultValue;
+      if (raw === null) return defaultValue;
+      const parsed = JSON.parse(raw);
+      return migrate ? migrate(parsed) : parsed;
     } catch {
       return defaultValue;
     }
