@@ -16,9 +16,12 @@ export function Header({ activePage }: HeaderProps) {
 
   return (
     <header className="border-b-2 border-border px-6 py-4 flex items-center shrink-0">
-      {/* Left — logo */}
-      <Link to="/" className="text-2xl font-bold tracking-[0.12em] text-text hover:text-text no-underline">
-        K<span className="text-amber">A</span>RUM
+      {/* Left — logo (wordmark on desktop, favicon on mobile) */}
+      <Link to="/" className="text-text hover:text-text no-underline shrink-0">
+        <span className="hidden sm:inline text-2xl font-bold tracking-[0.12em]">
+          K<span className="text-amber">A</span>RUM
+        </span>
+        <img src="/favicon.svg" alt="KARUM" className="sm:hidden w-7 h-7" />
       </Link>
 
       {/* Center — nav */}
