@@ -6,13 +6,16 @@ interface CacheEntry<T> {
 const DEFAULT_TTL_MS = 7 * 24 * 60 * 60 * 1000; // 1 week
 const DB_NAME = "karum-cache";
 const STORE_NAME = "entries";
-const DB_VERSION = 1;
+const DB_VERSION = 2;
 
 function openDB(): Promise<IDBDatabase> {
   return new Promise((resolve, reject) => {
     const req = indexedDB.open(DB_NAME, DB_VERSION);
     req.onupgradeneeded = () => {
-      req.result.createObjectStore(STORE_NAME);
+      const db = req.result;
+      if (!db.objectStoreNames.contains(STORE_NAME)) {
+        db.createObjectStore(STORE_NAME);
+      }
     };
     req.onsuccess = () => resolve(req.result);
     req.onerror = () => reject(req.error);

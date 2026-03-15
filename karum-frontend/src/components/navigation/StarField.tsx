@@ -224,7 +224,7 @@ export function StarField({ systems, onHover, fromSystemId, toSystemId, shopSyst
           <bufferAttribute attach="attributes-position" args={[positions, 3]} />
         </bufferGeometry>
         <pointsMaterial
-          size={4}
+          size={hasHighlight ? 2 : 4}
           map={starTexture}
           color={hasHighlight ? "#8a6a30" : "#e8a832"}
           sizeAttenuation
