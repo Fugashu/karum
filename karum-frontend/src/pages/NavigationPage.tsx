@@ -16,6 +16,7 @@ export function NavigationPage() {
   const [to, setTo] = usePersisted<string | null>("karum:nav:to", null);
   const [resolvedParam, setResolvedParam] = useState(false);
   const mapRef = useRef<NavigationMapHandle>(null);
+  const [routePath, setRoutePath] = useState<number[] | null>(null);
   const { data: shops = [] } = useShops();
 
   const shopSystemNames = useMemo(
@@ -57,6 +58,7 @@ export function NavigationPage() {
           fromSystemId={from}
           toSystemId={to}
           shopSystemNames={shopSystemNames}
+          routePath={routePath}
         />
         <NavigationSidebar
           universe={universe}
@@ -65,6 +67,7 @@ export function NavigationPage() {
           onFromChange={setFrom}
           onToChange={setTo}
           onFocusSystem={(systemId) => mapRef.current?.focusSystem(systemId)}
+          onRouteCalculated={setRoutePath}
         />
       </div>
     </div>
