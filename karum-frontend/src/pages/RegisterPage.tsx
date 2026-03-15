@@ -105,6 +105,7 @@ export function RegisterPage() {
 
         {isConnected && <SetupFlow />}
       </main>
+      <Footer />
     </div>
   );
 }
@@ -695,7 +696,6 @@ function SetupFlow() {
           </p>
         </div>
       )}
-      <Footer />
     </div>
   );
 }
