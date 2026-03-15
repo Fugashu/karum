@@ -22,3 +22,5 @@
   - [x] google maps, how fast to get there
   - [x] ~~finder~~ navigation page search / filter
   - [x] ~~finder~~ navigation page sort by distance
+  - [x] backend with dijkstra to find shortest path
+  - [ ] finder add starting position -> sorting by distance
