@@ -8,7 +8,6 @@ from loguru import logger
 
 from src.config import config
 from src.guild_config import get_all_notification_channels
-from src.sui_client import sui_client
 
 
 EVENT_TYPE = f"{config.registry_package_id}::registry::ShopRegistered"
@@ -38,7 +37,7 @@ async def query_events(cursor: str | None = None) -> tuple[list[dict], str | Non
     return events, next_cursor
 
 
-async def build_embed(event: dict) -> discord.Embed:
+def build_embed(event: dict) -> discord.Embed:
     """Build a Discord embed from a ShopRegistered event."""
     parsed = event.get("parsedJson", {})
     name = parsed.get("name", "Unknown")
@@ -49,16 +48,13 @@ async def build_embed(event: dict) -> discord.Embed:
     owner_short = f"{owner[:6]}...{owner[-4:]}" if len(owner) > 10 else owner
     ssu_short = f"{ssu_id[:6]}...{ssu_id[-4:]}" if len(ssu_id) > 10 else ssu_id
 
-    owner_name = await sui_client.get_username(owner)
-    owner_display = f"{owner_name} ({owner_short})" if owner_name else owner_short
-
     embed = discord.Embed(
         title=f"New Shop: {name}",
-        description="A new shop has been registered on the KARUM marketplace.",
+        description="A new shop has been registered on the Karum marketplace.",
         color=0xE8A832,
     )
     embed.add_field(name="Solar System", value=solar_system, inline=True)
-    embed.add_field(name="Owner", value=owner_display, inline=True)
+    embed.add_field(name="Owner", value=owner_short, inline=True)
     embed.add_field(name="SSU", value=ssu_short, inline=False)
     embed.set_footer(text="KARUM — The Frontier's First Marketplace Network")
 
@@ -92,7 +88,7 @@ async def poll_loop(bot: discord.Client):
                     continue
 
                 seen_ids.add(eid)
-                embed = await build_embed(event)
+                embed = build_embed(event)
                 shop_name = event.get("parsedJson", {}).get("name", "?")
 
                 channel_ids = get_all_notification_channels()

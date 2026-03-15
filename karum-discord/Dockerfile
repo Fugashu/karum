@@ -8,11 +8,11 @@ COPY pyproject.toml uv.lock ./
 RUN uv sync --frozen --no-dev
 
 COPY src/ src/
+RUN mkdir -p data
 
 RUN addgroup --system --gid 1001 appgroup \
-  && adduser --system --uid 1001 --ingroup appgroup --home /home/appuser appuser \
-  && mkdir -p data /home/appuser/.cache/uv \
-  && chown -R appuser:appgroup /app /home/appuser
+  && adduser --system --uid 1001 --ingroup appgroup appuser \
+  && chown -R appuser:appgroup /app
 
 USER appuser
 
