@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { fetchUniverse, type UniverseData } from "../services/gateway";
 import { cachedFetch } from "../services/local-storage";
+import { setGameTypes } from "../services/item-types";
 
 interface UseUniverseResult {
   universe: UniverseData | null;
@@ -38,6 +39,7 @@ export function useUniverse(): UseUniverseResult {
       setUniverse(data);
       setLoading(false);
       if (!fromCache) setProgress(100);
+      if (data.gameTypes) setGameTypes(data.gameTypes);
     });
   }, []);
 
