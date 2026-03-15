@@ -7,6 +7,7 @@ import { useFilters, type SortMode } from "../hooks/use-filters";
 import { useUniverse } from "../hooks/use-universe";
 import { usePersisted } from "../hooks/use-persisted";
 import { useShopDistances } from "../hooks/use-shop-distances";
+import { useOwnerNames } from "../hooks/use-owner-names";
 import { Header } from "../components/Header";
 import { SearchSelect, type SearchSelectItem } from "../components/ui/SearchSelect";
 import { useCurrentAccount } from "@mysten/dapp-kit-react";
@@ -47,6 +48,7 @@ export function FinderPage() {
   }, [universe]);
 
   const distanceMap = useShopDistances(myLocation, universe?.solarSystems ?? [], shops);
+  const { data: ownerNames } = useOwnerNames();
 
   const {
     filtered,
@@ -234,8 +236,10 @@ export function FinderPage() {
                     <ShareButton ssuId={shop.listing.ssu_id} />
                   </div>
 
-                  <span className="text-[10px] text-text-dim font-mono">
-                    {shop.listing.owner.slice(0, 6)}...{shop.listing.owner.slice(-4)}
+                  <span className="text-[10px] text-text-dim">
+                    {ownerNames?.get(shop.listing.owner.toLowerCase()) || (
+                      <span className="font-mono">{shop.listing.owner.slice(0, 6)}...{shop.listing.owner.slice(-4)}</span>
+                    )}
                   </span>
                   {shop.listing.description && (
                     <p className="font-body text-text-dim text-sm leading-relaxed">
