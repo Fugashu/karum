@@ -139,6 +139,29 @@ module karum::registry_tests {
     }
 
     #[test]
+    fun test_remove_shop() {
+        let mut scenario = ts::begin(OWNER);
+        { registry::init_for_testing(ts::ctx(&mut scenario)); };
+        ts::next_tx(&mut scenario, OWNER);
+        {
+            let mut reg = ts::take_shared<ShopRegistry>(&scenario);
+            let clock = clock::create_for_testing(ts::ctx(&mut scenario));
+            registry::register_shop(&mut reg, SSU_1, string::utf8(b"Shop"), string::utf8(b"Desc"), string::utf8(b"System"), &clock, ts::ctx(&mut scenario));
+            assert!(registry::shop_count(&reg) == 1);
+            assert!(registry::is_registered(&reg, SSU_1));
+            registry::remove_shop(&mut reg, SSU_1, &clock, ts::ctx(&mut scenario));
+            assert!(registry::shop_count(&reg) == 0);
+            assert!(!registry::is_registered(&reg, SSU_1));
+            // Can re-register after removal
+            registry::register_shop(&mut reg, SSU_1, string::utf8(b"Shop v2"), string::utf8(b"New"), string::utf8(b"System"), &clock, ts::ctx(&mut scenario));
+            assert!(registry::shop_count(&reg) == 1);
+            clock::destroy_for_testing(clock);
+            ts::return_shared(reg);
+        };
+        ts::end(scenario);
+    }
+
+    #[test]
     fun test_multiple_shops() {
         let mut scenario = ts::begin(OWNER);
         { registry::init_for_testing(ts::ctx(&mut scenario)); };

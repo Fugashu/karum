@@ -1,0 +1,67 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 1080" fill="none">
+  <rect width="1920" height="1080" fill="#0f0f0f"/>
+  <rect x="0" y="0" width="1920" height="4" fill="#e8a832"/>
+  <rect x="0" y="1076" width="1920" height="4" fill="#e8a832"/>
+
+  <!-- Section label -->
+  <text x="960" y="100" text-anchor="middle" font-family="monospace" font-size="18" fill="#e8a832" letter-spacing="0.2em">WHAT WE BUILT</text>
+
+  <!-- KARUM -->
+  <text x="960" y="210" text-anchor="middle" font-family="monospace" font-weight="bold" font-size="72" fill="#f0ece6" letter-spacing="0.14em">K<tspan fill="#e8a832">A</tspan>RUM</text>
+
+  <!-- One-liner -->
+  <text x="960" y="280" text-anchor="middle" font-family="sans-serif" font-size="30" fill="#b0aaa0">The Frontier's first marketplace network.</text>
+
+  <!-- Three function cards -->
+  <!-- Card 1: Register -->
+  <rect x="160" y="370" width="500" height="280" fill="#1c1c1c" stroke="#333333" stroke-width="2"/>
+  <rect x="160" y="370" width="500" height="4" fill="#e8a832"/>
+  <text x="410" y="430" text-anchor="middle" font-family="monospace" font-weight="bold" font-size="22" fill="#e8a832" letter-spacing="0.06em">REGISTER</text>
+  <text x="410" y="465" text-anchor="middle" font-family="monospace" font-size="14" fill="#706a60">On-chain shop registry</text>
+
+  <text x="210" y="510" font-family="sans-serif" font-size="20" fill="#f0ece6">SSU owners list their depot</text>
+  <text x="210" y="540" font-family="sans-serif" font-size="20" fill="#f0ece6">as a public marketplace.</text>
+  <text x="210" y="585" font-family="monospace" font-size="17" fill="#b0aaa0">What they sell</text>
+  <text x="210" y="612" font-family="monospace" font-size="17" fill="#b0aaa0">At what price</text>
+  <text x="210" y="639" font-family="monospace" font-size="17" fill="#b0aaa0">Minimum quantities</text>
+
+  <!-- Card 2: Discover -->
+  <rect x="710" y="370" width="500" height="280" fill="#1c1c1c" stroke="#333333" stroke-width="2"/>
+  <rect x="710" y="370" width="500" height="4" fill="#4ade80"/>
+  <text x="960" y="430" text-anchor="middle" font-family="monospace" font-weight="bold" font-size="22" fill="#4ade80" letter-spacing="0.06em">DISCOVER</text>
+  <text x="960" y="465" text-anchor="middle" font-family="monospace" font-size="14" fill="#706a60">Cross-referenced live data</text>
+
+  <text x="760" y="510" font-family="sans-serif" font-size="20" fill="#f0ece6">Registry intent meets</text>
+  <text x="760" y="540" font-family="sans-serif" font-size="20" fill="#f0ece6">blockchain reality.</text>
+  <text x="760" y="585" font-family="monospace" font-size="17" fill="#b0aaa0">Online status</text>
+  <text x="760" y="612" font-family="monospace" font-size="17" fill="#b0aaa0">Actual inventory</text>
+  <text x="760" y="639" font-family="monospace" font-size="17" fill="#b0aaa0">Fuel level + location</text>
+
+  <!-- Card 3: Trade -->
+  <rect x="1260" y="370" width="500" height="280" fill="#1c1c1c" stroke="#333333" stroke-width="2"/>
+  <rect x="1260" y="370" width="500" height="4" fill="#f0ece6"/>
+  <text x="1510" y="430" text-anchor="middle" font-family="monospace" font-weight="bold" font-size="22" fill="#f0ece6" letter-spacing="0.06em">TRADE</text>
+  <text x="1510" y="465" text-anchor="middle" font-family="monospace" font-size="14" fill="#706a60">Fly with confidence</text>
+
+  <text x="1310" y="510" font-family="sans-serif" font-size="20" fill="#f0ece6">Players find what they need,</text>
+  <text x="1310" y="540" font-family="sans-serif" font-size="20" fill="#f0ece6">know it's there, and go.</text>
+  <text x="1310" y="585" font-family="monospace" font-size="17" fill="#b0aaa0">Search by resource</text>
+  <text x="1310" y="612" font-family="monospace" font-size="17" fill="#b0aaa0">Compare prices</text>
+  <text x="1310" y="639" font-family="monospace" font-size="17" fill="#b0aaa0">No wallet needed to browse</text>
+
+  <!-- Flow arrows -->
+  <line x1="660" y1="510" x2="710" y2="510" stroke="#e8a832" stroke-width="2"/>
+  <polygon points="705,503 718,510 705,517" fill="#e8a832"/>
+  <line x1="1210" y1="510" x2="1260" y2="510" stroke="#4ade80" stroke-width="2"/>
+  <polygon points="1255,503 1268,510 1255,517" fill="#4ade80"/>
+
+  <!-- Bottom tagline -->
+  <text x="960" y="780" text-anchor="middle" font-family="sans-serif" font-size="24" fill="#b0aaa0">Clay tablets recorded the old Karum. Sui records the new one.</text>
+
+  <!-- Tech line -->
+  <rect x="560" y="860" width="800" height="70" fill="#1c1c1c" stroke="#333333" stroke-width="1"/>
+  <text x="960" y="903" text-anchor="middle" font-family="monospace" font-size="18" fill="#706a60">Sui Move contract + React dApp + EVE Frontier blockchain data</text>
+
+  <!-- Theme -->
+  <text x="960" y="1010" text-anchor="middle" font-family="monospace" font-size="20" fill="#e8a832" letter-spacing="0.1em">A TOOLKIT FOR CIVILIZATION</text>
+</svg>

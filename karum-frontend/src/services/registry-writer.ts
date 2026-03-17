@@ -137,6 +137,19 @@ export function buildRemoveOfferTx(
   return tx;
 }
 
+export function buildRemoveShopTx(ssuId: string): Transaction {
+  const tx = new Transaction();
+  tx.moveCall({
+    target: `${PACKAGE_ID}::registry::remove_shop`,
+    arguments: [
+      tx.object(REGISTRY_ID),
+      tx.pure.address(ssuId),
+      tx.object(CLOCK),
+    ],
+  });
+  return tx;
+}
+
 export function buildDeactivateShopTx(ssuId: string): Transaction {
   const tx = new Transaction();
   tx.moveCall({

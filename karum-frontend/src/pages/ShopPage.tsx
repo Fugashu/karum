@@ -6,6 +6,7 @@ import { useShops } from "../hooks/use-shops";
 import { useWallet } from "../hooks/use-wallet";
 import { useCharacter } from "../hooks/use-character";
 import { useOwnerNames } from "../hooks/use-owner-names";
+import { useRemoveShop } from "../hooks/use-deactivate-shop";
 import { Header } from "../components/Header";
 import { itemInfo } from "../services/item-types";
 import { config } from "../config";
@@ -215,6 +216,94 @@ function ShopDetail({ shop, ownerNames }: { shop: MergedShop; ownerNames?: Map<s
       <div className="px-6 pb-5">
         <ShopBuyPanel shop={shop} />
       </div>
+
+      {/* Owner controls */}
+      {isMine && (
+        <div className="px-6 pb-5">
+          <ShopOwnerControls shop={shop} />
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ============================================================================
+// Owner Controls — deactivate / reactivate shop
+// ============================================================================
+
+function ShopOwnerControls({ shop }: { shop: MergedShop }) {
+  const { removeShop, isRemoving } = useRemoveShop();
+  const [status, setStatus] = useState<"idle" | "success" | "error">("idle");
+  const [message, setMessage] = useState("");
+  const [confirming, setConfirming] = useState(false);
+
+  async function handleRemove() {
+    if (!confirming) {
+      setConfirming(true);
+      return;
+    }
+    setConfirming(false);
+    setStatus("idle");
+    setMessage("");
+    try {
+      await removeShop(shop.listing.ssu_id);
+      setStatus("success");
+      setMessage(
+        "Shop removed from the registry. You can re-register it anytime.",
+      );
+    } catch (e: any) {
+      setStatus("error");
+      setMessage(e?.message || String(e));
+    }
+  }
+
+  return (
+    <div className="border-t border-border/50 pt-4 space-y-3">
+      <h3 className="text-xs text-text-dim tracking-wider">MANAGE SHOP</h3>
+
+      <div className="flex items-center gap-3 flex-wrap">
+        {confirming ? (
+          <>
+            <span className="text-xs text-text-mid">
+              This will permanently remove your shop from the registry. You can
+              re-register later.
+            </span>
+            <button
+              onClick={handleRemove}
+              disabled={isRemoving}
+              className="px-4 py-1.5 border-2 border-red text-red text-xs font-bold tracking-wider hover:bg-red/10 disabled:opacity-50 cursor-pointer"
+            >
+              {isRemoving ? "..." : "YES, REMOVE"}
+            </button>
+            <button
+              onClick={() => setConfirming(false)}
+              className="px-4 py-1.5 border border-border text-text-dim text-xs tracking-wider hover:border-text-dim cursor-pointer"
+            >
+              CANCEL
+            </button>
+          </>
+        ) : (
+          <button
+            onClick={handleRemove}
+            disabled={isRemoving}
+            className="px-4 py-1.5 border-2 border-red/50 text-red text-xs font-bold tracking-wider hover:bg-red/10 disabled:opacity-50 cursor-pointer"
+          >
+            REMOVE SHOP
+          </button>
+        )}
+      </div>
+
+      {message && (
+        <p
+          className={`text-xs border px-3 py-2 ${
+            status === "success"
+              ? "text-green border-green/30 bg-green/5"
+              : "text-red border-red/30 bg-red/5"
+          }`}
+        >
+          {message}
+        </p>
+      )}
     </div>
   );
 }

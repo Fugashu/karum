@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 1080" fill="none">
+  <rect width="1920" height="1080" fill="#0f0f0f"/>
+  <rect x="0" y="0" width="1920" height="4" fill="#e8a832"/>
+  <rect x="0" y="1076" width="1920" height="4" fill="#e8a832"/>
+
+  <!-- KARUM logo -->
+  <text x="960" y="280" text-anchor="middle" font-family="monospace" font-weight="bold" font-size="140" fill="#f0ece6" letter-spacing="0.14em">K<tspan fill="#e8a832">A</tspan>RUM</text>
+
+  <!-- Pitch line -->
+  <text x="960" y="380" text-anchor="middle" font-family="sans-serif" font-size="32" fill="#b0aaa0">Registry says "sells fuel at 2.10."</text>
+  <text x="960" y="425" text-anchor="middle" font-family="sans-serif" font-size="32" fill="#b0aaa0">Gateway confirms "3,200 in stock, SSU online."</text>
+  <text x="960" y="480" text-anchor="middle" font-family="monospace" font-weight="bold" font-size="28" fill="#e8a832">Fly there. Refuel. Survive.</text>
+
+  <!-- Divider -->
+  <line x1="760" y1="530" x2="1160" y2="530" stroke="#333333" stroke-width="2"/>
+
+  <!-- Links -->
+  <text x="960" y="600" text-anchor="middle" font-family="monospace" font-size="22" fill="#706a60" letter-spacing="0.06em">TRY IT NOW</text>
+
+  <rect x="610" y="625" width="700" height="60" fill="#1c1c1c" stroke="#e8a832" stroke-width="2"/>
+  <text x="960" y="663" text-anchor="middle" font-family="monospace" font-weight="bold" font-size="26" fill="#e8a832">karum.space</text>
+
+  <!-- Built with -->
+  <text x="960" y="770" text-anchor="middle" font-family="monospace" font-size="18" fill="#706a60" letter-spacing="0.08em">BUILT WITH</text>
+
+  <rect x="520" y="800" width="200" height="50" fill="#1c1c1c" stroke="#333333" stroke-width="2"/>
+  <text x="620" y="832" text-anchor="middle" font-family="monospace" font-size="18" fill="#b0aaa0">Sui Move</text>
+
+  <rect x="760" y="800" width="200" height="50" fill="#1c1c1c" stroke="#333333" stroke-width="2"/>
+  <text x="860" y="832" text-anchor="middle" font-family="monospace" font-size="18" fill="#b0aaa0">React</text>
+
+  <rect x="1000" y="800" width="200" height="50" fill="#1c1c1c" stroke="#333333" stroke-width="2"/>
+  <text x="1100" y="832" text-anchor="middle" font-family="monospace" font-size="18" fill="#b0aaa0">Vercel</text>
+
+  <!-- Hackathon -->
+  <text x="960" y="940" text-anchor="middle" font-family="monospace" font-size="22" fill="#e8a832" letter-spacing="0.1em">EVE FRONTIER x SUI HACKATHON 2026</text>
+
+  <!-- Theme -->
+  <text x="960" y="990" text-anchor="middle" font-family="sans-serif" font-size="20" fill="#706a60" letter-spacing="0.06em">A Toolkit for Civilization</text>
+</svg>
