@@ -216,6 +216,18 @@ module karum::registry {
 
     // ===================== STATUS =====================
 
+    /// Remove a shop entirely from the registry. Owner can re-register later.
+    public fun remove_shop(
+        registry: &mut ShopRegistry, ssu_id: address, clock: &Clock, ctx: &mut TxContext,
+    ) {
+        assert!(table::contains(&registry.shops, ssu_id), E_SHOP_NOT_FOUND);
+        let listing = table::borrow(&registry.shops, ssu_id);
+        assert!(listing.owner == tx_context::sender(ctx), E_NOT_OWNER);
+        table::remove(&mut registry.shops, ssu_id);
+        registry.shop_count = registry.shop_count - 1;
+        event::emit(ShopStatusChanged { ssu_id, is_active: false, timestamp: clock::timestamp_ms(clock) });
+    }
+
     public fun deactivate_shop(
         registry: &mut ShopRegistry, ssu_id: address, clock: &Clock, ctx: &mut TxContext,
     ) {
