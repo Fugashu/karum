@@ -54,7 +54,7 @@ async def build_embed(event: dict) -> discord.Embed:
 
     embed = discord.Embed(
         title=f"New Shop: {name}",
-        description="A new shop has been registered on the Karum marketplace.",
+        description="A new shop has been registered on the KARUM marketplace.",
         color=0xE8A832,
     )
     embed.add_field(name="Solar System", value=solar_system, inline=True)
