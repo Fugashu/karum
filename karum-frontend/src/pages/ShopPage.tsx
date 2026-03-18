@@ -163,6 +163,9 @@ function ShopDetail({ shop, ownerNames }: { shop: MergedShop; ownerNames?: Map<s
               </span>
             )}
           </span>
+          <span className="font-mono">
+            SSU {shop.listing.ssu_id.slice(0, 6)}...{shop.listing.ssu_id.slice(-4)}
+          </span>
         </div>
       </div>
 

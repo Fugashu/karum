@@ -237,11 +237,16 @@ export function FinderPage() {
                     <ShareButton ssuId={shop.listing.ssu_id} />
                   </div>
 
-                  <span className="text-[10px] text-text-dim">
-                    {ownerNames?.get(shop.listing.owner.toLowerCase()) || (
-                      <span className="font-mono">{shop.listing.owner.slice(0, 6)}...{shop.listing.owner.slice(-4)}</span>
-                    )}
-                  </span>
+                  <div className="flex items-center gap-3 text-[10px] text-text-dim">
+                    <span>
+                      {ownerNames?.get(shop.listing.owner.toLowerCase()) || (
+                        <span className="font-mono">{shop.listing.owner.slice(0, 6)}...{shop.listing.owner.slice(-4)}</span>
+                      )}
+                    </span>
+                    <span className="font-mono">
+                      SSU {shop.listing.ssu_id.slice(0, 6)}...{shop.listing.ssu_id.slice(-4)}
+                    </span>
+                  </div>
                   {shop.listing.description && (
                     <p className="font-body text-text-dim text-sm leading-relaxed">
                       {shop.listing.description}
