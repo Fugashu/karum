@@ -237,11 +237,30 @@ export function FinderPage() {
                     <ShareButton ssuId={shop.listing.ssu_id} />
                   </div>
 
-                  <span className="text-[10px] text-text-dim">
-                    {ownerNames?.get(shop.listing.owner.toLowerCase()) || (
-                      <span className="font-mono">{shop.listing.owner.slice(0, 6)}...{shop.listing.owner.slice(-4)}</span>
-                    )}
-                  </span>
+                  <div className="flex items-center gap-3 text-[10px] text-text-dim">
+                    <span>
+                      {ownerNames?.get(shop.listing.owner.toLowerCase()) || (
+                        <span className="font-mono">{shop.listing.owner.slice(0, 6)}...{shop.listing.owner.slice(-4)}</span>
+                      )}
+                    </span>
+                    <button
+                      type="button"
+                      className="group font-mono inline-flex items-center gap-1 hover:text-amber transition-colors cursor-pointer"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        navigator.clipboard.writeText(shop.listing.ssu_id);
+                        const el = e.currentTarget;
+                        el.dataset.copied = "true";
+                        setTimeout(() => { el.dataset.copied = ""; }, 1500);
+                      }}
+                    >
+                      <span className="group-data-[copied=true]:hidden">
+                        SSU {shop.listing.ssu_id.slice(0, 6)}...{shop.listing.ssu_id.slice(-4)}
+                      </span>
+                      <span className="hidden group-data-[copied=true]:inline text-amber">COPIED</span>
+                      <svg className="w-2.5 h-2.5 group-data-[copied=true]:hidden" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="square"><rect x="9" y="9" width="13" height="13"/><path d="M5 15H4V4h11v1"/></svg>
+                    </button>
+                  </div>
                   {shop.listing.description && (
                     <p className="font-body text-text-dim text-sm leading-relaxed">
                       {shop.listing.description}
