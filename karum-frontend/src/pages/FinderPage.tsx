@@ -16,6 +16,7 @@ import { useWallet } from "../hooks/use-wallet";
 import { useCharacter } from "../hooks/use-character";
 import { itemInfo } from "../services/item-types";
 import { config } from "../config";
+import { useIsMobile } from "../hooks/use-is-mobile";
 import type { MergedShop, ShopOffer } from "../types";
 
 const VENDOR_PKG = config.vendor.packageId;
@@ -39,6 +40,8 @@ function formatDist(raw: number): string {
 
 export function FinderPage() {
   const { data: shops = [], isLoading, error, refetch, isFetching } = useShops();
+  const isMobile = useIsMobile();
+  const [mobileToast, setMobileToast] = useState(false);
   const { universe } = useUniverse();
   const [myLocation, setMyLocation] = usePersisted<string | null>("karum:my-location", null);
 
@@ -77,7 +80,7 @@ export function FinderPage() {
     <div className="min-h-screen bg-bg">
       <Header activePage="/" />
 
-      <main className="max-w-4xl mx-auto px-4 py-6">
+      <main className="max-w-4xl mx-auto px-4 py-6 pb-16">
         {/* Reload + Search */}
         <div className="flex gap-2 mb-3">
           <input
@@ -109,9 +112,9 @@ export function FinderPage() {
           </button>
         </div>
 
-        {/* Filter row */}
-        <div className="flex gap-2 mb-5 flex-wrap items-center">
-          <div className="min-w-[180px]">
+        {/* Filters — one row on desktop, stacked on mobile */}
+        <div className="flex flex-wrap gap-2 mb-5 items-center">
+          <div className="w-[calc(50%-4px)] sm:w-auto sm:min-w-[180px]">
             <SearchSelect
               items={systemItems}
               value={myLocation}
@@ -119,8 +122,7 @@ export function FinderPage() {
               placeholder={universe ? "My location..." : "Loading..."}
             />
           </div>
-
-          <div className="min-w-[160px]">
+          <div className="w-[calc(50%-4px)] sm:w-auto sm:min-w-[160px]">
             <SearchSelect
               items={resourceItems}
               value={filters.resourceTypeId !== null ? String(filters.resourceTypeId) : null}
@@ -128,8 +130,7 @@ export function FinderPage() {
               placeholder="All resources..."
             />
           </div>
-
-          <div className="min-w-[150px]">
+          <div className="w-[calc(50%-4px)] sm:w-auto sm:min-w-[150px]">
             <SearchSelect
               items={sortItems}
               value={filters.sort}
@@ -149,9 +150,7 @@ export function FinderPage() {
             ONLINE ONLY
           </button>
 
-
-          {/* Inline stats */}
-          <div className="ml-auto flex gap-4 text-xs text-text-dim items-center">
+          <div className="ml-auto hidden sm:flex gap-4 text-xs text-text-dim items-center">
             <span>
               <span className="text-green">{filtered.filter((s) => s.isOnline).length}</span>/{filtered.length} online
             </span>
@@ -197,6 +196,7 @@ export function FinderPage() {
               >
                 {/* Card header */}
                 <div className="px-5 pt-4 pb-3">
+                  {/* Row 1: status dot + name + badges + share */}
                   <div className="flex items-center gap-2.5 mb-1">
                     <span
                       className={`w-2 h-2 shrink-0 ${
@@ -207,37 +207,39 @@ export function FinderPage() {
                     />
                     <Link
                       to={`/shop/${shop.listing.ssu_id}`}
-                      className="text-base font-bold text-text leading-tight hover:text-amber transition-colors no-underline"
+                      className="text-base font-bold text-text leading-tight hover:text-amber transition-colors no-underline truncate"
                     >
                       {shop.listing.name}
                     </Link>
                     {isMine && (
-                      <span className="text-[9px] text-amber font-bold tracking-wider border border-amber/40 px-1.5 py-0.5">
+                      <span className="hidden sm:inline text-[9px] text-amber font-bold tracking-wider border border-amber/40 px-1.5 py-0.5">
                         YOUR SHOP
                       </span>
                     )}
                     {!shop.isOnline && (
-                      <span className="text-[9px] text-red font-bold tracking-wider">
+                      <span className="hidden sm:inline text-[9px] text-red font-bold tracking-wider">
                         OFFLINE
                       </span>
                     )}
+                    {/* Desktop: solar system + distance inline */}
                     {shop.listing.solar_system && (
                       <Link
                         to={`/navigation?system=${encodeURIComponent(shop.listing.solar_system)}&ssu=${encodeURIComponent(shop.listing.ssu_id)}`}
-                        className="text-[10px] text-text-dim border border-border px-1.5 py-0.5 ml-1 hover:border-amber hover:text-amber transition-colors no-underline cursor-pointer"
+                        className="hidden sm:inline text-[10px] text-text-dim border border-border px-1.5 py-0.5 ml-1 hover:border-amber hover:text-amber transition-colors no-underline cursor-pointer"
                       >
                         {shop.listing.solar_system}
                       </Link>
                     )}
                     {distLabel && (
-                      <span className="text-[10px] text-text-dim ml-1">
+                      <span className="hidden sm:inline text-[10px] text-text-dim ml-1">
                         {distLabel}
                       </span>
                     )}
                     <ShareButton ssuId={shop.listing.ssu_id} />
                   </div>
 
-                  <div className="flex items-center gap-3 text-[10px] text-text-dim">
+                  {/* Meta: owner + SSU ID + (mobile: solar system + badges) */}
+                  <div className="flex items-center gap-3 text-[10px] text-text-dim flex-wrap">
                     <span>
                       {ownerNames?.get(shop.listing.owner.toLowerCase()) || (
                         <span className="font-mono">{shop.listing.owner.slice(0, 6)}...{shop.listing.owner.slice(-4)}</span>
@@ -260,6 +262,30 @@ export function FinderPage() {
                       <span className="hidden group-data-[copied=true]:inline text-amber">COPIED</span>
                       <svg className="w-2.5 h-2.5 group-data-[copied=true]:hidden" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="square"><rect x="9" y="9" width="13" height="13"/><path d="M5 15H4V4h11v1"/></svg>
                     </button>
+                    {isMine && (
+                      <span className="sm:hidden text-[9px] text-amber font-bold tracking-wider border border-amber/40 px-1.5 py-0.5">
+                        YOUR SHOP
+                      </span>
+                    )}
+                    {!shop.isOnline && (
+                      <span className="sm:hidden text-[9px] text-red font-bold tracking-wider">
+                        OFFLINE
+                      </span>
+                    )}
+                    {/* Mobile: solar system + distance pushed right */}
+                    <span className="sm:hidden ml-auto flex items-center gap-2">
+                      {distLabel && (
+                        <span className="text-text-dim">{distLabel}</span>
+                      )}
+                      {shop.listing.solar_system && (
+                        <button
+                          onClick={() => { setMobileToast(true); setTimeout(() => setMobileToast(false), 2000); }}
+                          className="text-text-dim border border-border px-1.5 py-0.5 hover:border-amber hover:text-amber transition-colors cursor-pointer"
+                        >
+                          {shop.listing.solar_system}
+                        </button>
+                      )}
+                    </span>
                   </div>
                   {shop.listing.description && (
                     <p className="font-body text-text-dim text-sm leading-relaxed">
@@ -270,7 +296,7 @@ export function FinderPage() {
 
                 {/* Offers */}
                 <div className="px-5 pb-4">
-                  <div className="flex flex-wrap gap-1.5">
+                  <div className="flex flex-col sm:flex-row sm:flex-wrap gap-1.5">
                     {shop.listing.offers.map((offer, i) => {
                       const inStock = shop.ssu?.inventory.items.find(
                         (item) => item.type_id === offer.resource_type_id,
@@ -282,14 +308,14 @@ export function FinderPage() {
                       const hasStock = stockQty >= offer.min_quantity;
 
                       return (
-                        <div key={i} className="relative group">
+                        <div key={i} className="relative group w-full sm:w-auto">
                           <button
                             onClick={() =>
                               setResourceType(
                                 isFilteredResource ? null : offer.resource_type_id,
                               )
                             }
-                            className={`flex items-center gap-1.5 border px-2.5 py-1 text-xs cursor-pointer transition-colors ${
+                            className={`w-full sm:w-auto flex items-center gap-1.5 border px-2.5 py-1 text-xs cursor-pointer transition-colors ${
                               isFilteredResource
                                 ? "bg-amber/10 border-amber"
                                 : "bg-bg border-border hover:border-border-hover"
@@ -307,7 +333,7 @@ export function FinderPage() {
                             <span className={`font-mono ${hasStock ? "text-green" : "text-red"}`}>
                               {hasStock ? stockQty.toLocaleString() : "0"}
                             </span>
-                            <span className="text-text-dim text-[10px]">in stock</span>
+                            <span className="hidden sm:inline text-text-dim text-[10px]">in stock</span>
                           </button>
                           {info && (
                             <div className="absolute bottom-full left-0 mb-1 hidden group-hover:block z-50 pointer-events-none">
@@ -327,12 +353,20 @@ export function FinderPage() {
                     })}
                   </div>
 
-                  {/* Buy panel */}
-                  <BuyPanel shop={shop} onPurchase={() => refetch()} />
+                  {/* Buy panel (desktop only — wallet not available on mobile) */}
+                  <div className="hidden sm:block">
+                    <BuyPanel shop={shop} onPurchase={() => refetch()} />
+                  </div>
                 </div>
               </div>
               );
             })}
+          </div>
+        )}
+        {/* Mobile toast */}
+        {mobileToast && (
+          <div className="fixed bottom-16 left-1/2 -translate-x-1/2 z-50 bg-card border-2 border-amber px-4 py-2.5 text-xs text-amber font-bold tracking-wider">
+            Navigation is only available on desktop
           </div>
         )}
       </main>
@@ -535,12 +569,17 @@ function BuyPanel({ shop, onPurchase }: { shop: MergedShop; onPurchase: () => vo
 function ShareButton({ ssuId }: { ssuId: string }) {
   const [copied, setCopied] = useState(false);
 
-  const handleShare = useCallback(() => {
+  const handleShare = useCallback(async () => {
     const url = `${window.location.origin}/shop/${ssuId}`;
-    navigator.clipboard.writeText(url).then(() => {
+    if (navigator.share) {
+      try {
+        await navigator.share({ title: "KARUM Shop", url });
+      } catch (_) { /* user cancelled */ }
+    } else {
+      await navigator.clipboard.writeText(url);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
-    });
+    }
   }, [ssuId]);
 
   return (

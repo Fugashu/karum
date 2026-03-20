@@ -31,7 +31,7 @@ export function HistoryPage() {
     <div className="min-h-screen bg-bg">
       <Header activePage="/history" />
 
-      <main className="max-w-3xl mx-auto px-4 py-8">
+      <main className="max-w-3xl mx-auto px-4 py-8 pb-16">
         <h2 className="text-sm font-bold tracking-[0.1em] uppercase text-text mb-6">
           Your Purchases
         </h2>

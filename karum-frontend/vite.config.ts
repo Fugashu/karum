@@ -16,4 +16,7 @@ function ogAbsoluteUrls(): Plugin {
 
 export default defineConfig({
   plugins: [react(), tailwindcss(), ogAbsoluteUrls()],
+  server: {
+    host: "0.0.0.0",
+  },
 });

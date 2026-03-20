@@ -3,10 +3,14 @@ const DISCORD_BOT_URL =
 
 export function Footer() {
   return (
-    <footer className="fixed bottom-0 left-0 right-0 border-t border-border bg-bg px-6 py-3 flex items-center text-xs text-text-dim z-40">
-      <div className="flex-1" />
-      <span>KARUM — The Frontier's First Marketplace Network</span>
-      <div className="flex-1 flex justify-end">
+    <footer className="fixed bottom-0 left-0 right-0 border-t border-border bg-bg px-6 py-3 flex justify-center items-center text-xs text-text-dim z-40">
+      <div className="flex-1 hidden sm:block" />
+      <span className="text-center">
+        <span className="sm:hidden block">KARUM</span>
+        <span className="hidden sm:inline">KARUM — </span>
+        <span>The Frontier's First Marketplace Network</span>
+      </span>
+      <div className="flex-1 hidden sm:flex justify-end">
         <a
           href={DISCORD_BOT_URL}
           target="_blank"

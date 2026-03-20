@@ -3,8 +3,8 @@ import { useWallet } from "../hooks/use-wallet";
 
 const NAV_ITEMS = [
   { href: "/", label: "SHOPS" },
-  { href: "/navigation", label: "NAVIGATE" },
-  { href: "/register", label: "REGISTER" },
+  { href: "/navigation", label: "NAVIGATE", hideOnMobile: true },
+  { href: "/register", label: "REGISTER", hideOnMobile: true },
 ];
 
 interface HeaderProps {
@@ -24,25 +24,25 @@ export function Header({ activePage }: HeaderProps) {
         <img src="/favicon.svg" alt="KARUM" className="sm:hidden w-7 h-7" />
       </Link>
 
-      {/* Center — nav */}
-      <nav className="flex-1 flex justify-center gap-4 text-sm text-text-mid">
+      {/* Center — nav (hidden on mobile since only SHOPS remains) */}
+      <nav className="flex-1 hidden sm:flex justify-center gap-4 text-sm text-text-mid">
         {NAV_ITEMS.map((item) => (
           <Link
             key={item.href}
             to={item.href}
-            className={
+            className={`${
               item.href === activePage
                 ? "text-amber border-b-2 border-amber pb-1"
                 : "hover:text-text"
-            }
+            }${item.hideOnMobile ? " hidden sm:inline" : ""}`}
           >
             {item.label}
           </Link>
         ))}
       </nav>
 
-      {/* Right — wallet + purchases */}
-      <div className="flex items-center gap-4">
+      {/* Right — wallet + purchases (desktop only) */}
+      <div className="hidden sm:flex items-center gap-4">
         {isConnected ? (
           <div className="flex items-center gap-3">
             <Link

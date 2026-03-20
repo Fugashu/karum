@@ -53,7 +53,7 @@ export function RegisterPage() {
     <div className="min-h-screen bg-bg">
       <Header activePage="/register" />
 
-      <main className="max-w-2xl mx-auto px-4 py-12">
+      <main className="max-w-2xl mx-auto px-4 py-12 pb-16">
         <h2 className="text-xl font-bold tracking-wider mb-6">
           REGISTER YOUR SHOP
         </h2>
