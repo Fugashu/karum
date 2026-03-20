@@ -146,6 +146,27 @@ ShopOffer {
 
 `ShopRegistered`, `OfferAdded`, `PriceUpdated`, `ShopStatusChanged` — all emitted on-chain, consumed by the Discord bot for real-time notifications.
 
+## Discord Bot
+
+KARUM includes a Discord bot that posts real-time notifications to your server whenever a new shop is registered or updated on-chain.
+
+### Setup
+
+1. Go to [karum.space](https://karum.space) and click **"Add Discord Bot"** in the footer
+2. Authorize the bot for your server
+3. In Discord, navigate to the channel where you want notifications
+4. Run `/setchannel` in that channel (requires **Manage Channels** permission)
+
+The bot will start posting shop notifications to that channel.
+
+### Commands
+
+| Command | Description |
+|---------|------------|
+| `/setchannel` | Run in a channel to set it as the notification target (requires Manage Channels) |
+| `/channel` | Show which channel is currently configured for notifications |
+| `/ping` | Check if the bot is alive |
+
 ## Repo Structure
 
 ```
