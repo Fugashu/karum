@@ -173,7 +173,7 @@ karum/
 
 ## Team
 
-Built by [ZettaBite4031](https://github.com/ZettaBite4031) for the EVE Frontier x Sui Hackathon 2026.
+Built by [Fugashu](https://github.com/Fugashu) and [Dimfred](https://github.com/Dimfred) for the EVE Frontier x Sui Hackathon 2026.
 
 Theme: **A Toolkit for Civilization.** Because every civilization needs a marketplace.
 
