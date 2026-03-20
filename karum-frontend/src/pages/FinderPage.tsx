@@ -16,7 +16,6 @@ import { useWallet } from "../hooks/use-wallet";
 import { useCharacter } from "../hooks/use-character";
 import { itemInfo } from "../services/item-types";
 import { config } from "../config";
-import { useIsMobile } from "../hooks/use-is-mobile";
 import type { MergedShop, ShopOffer } from "../types";
 
 const VENDOR_PKG = config.vendor.packageId;
@@ -40,7 +39,6 @@ function formatDist(raw: number): string {
 
 export function FinderPage() {
   const { data: shops = [], isLoading, error, refetch, isFetching } = useShops();
-  const isMobile = useIsMobile();
   const [mobileToast, setMobileToast] = useState(false);
   const { universe } = useUniverse();
   const [myLocation, setMyLocation] = usePersisted<string | null>("karum:my-location", null);
