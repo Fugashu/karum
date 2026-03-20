@@ -10,6 +10,8 @@ Four thousand years ago, Assyrian merchants built the Karum — humanity's first
 
 ![KARUM — Shop Registration](./presentation/Screenshot%202026-03-20%20094926.png)
 
+![KARUM — Discord Bot Notifications](./presentation/discordbot.png)
+
 ## What It Does
 
 KARUM is an on-chain marketplace registry for EVE Frontier. SSU owners register shops. Players find resources.
