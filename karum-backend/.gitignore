@@ -8,4 +8,6 @@ data/*
 !data/images/
 data/images/*
 !data/images/icons/
+!data/images/check_missing.py
+!data/images/available_items.txt
 !data/items.json

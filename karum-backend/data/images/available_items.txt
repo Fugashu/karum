@@ -1,0 +1,390 @@
+82128	AC Gyrojet Ammo 1 (S) 
+82126	AC Gyrojet Ammo 2 (S)
+82127	AC Gyrojet Ammo 3 (S)
+83441	Adaptive Nanitic Armor Weave II
+83442	Adaptive Nanitic Armor Weave III
+83443	Adaptive Nanitic Armor Weave IV
+82681	Afterburner II
+83536	Afterburner III
+82915	Afterburner IV
+78416	Apocalypse Protocol Frame
+78420	Archangel Protocol Frame
+78448	Aromatic Carbon Veins
+88782	Aromatic Carbon Weave
+73210	Askur Access Code Cypher
+73264	Askur Hive Orders
+88068	Assembler
+91708	Assembler
+82653	Attuned Shield Generator II
+83450	Attuned Shield Generator III
+83451	Attuned Shield Generator IV
+81974	Base Autocannon (S)
+82028	Base Coilgun (M)
+81972	Base Coilgun (S)
+82030	Base Howitzer (M)
+82032	Base Rapid Plasma (S)
+78417	Bastion Program Frame
+88841	Batched Carbon Weave
+88839	Batched Printed Circuits
+84204	Batched Reinforced Alloys
+88843	Batched Thermal Composites
+88070	Berth
+91706	Berth
+92422	Brine
+89089	Building Foam
+82647	Bulky Armor Plates II
+83421	Bulky Armor Plates III
+83423	Bulky Armor Plates V
+82652	Bulwark Shield Generator II
+83448	Bulwark Shield Generator III
+83449	Bulwark Shield Generator IV
+91937	Calamitous Marrow
+84210	Carbon Weave
+83497	Cargo Grid II
+83498	Cargo Grid III
+83499	Cargo Grid IV
+83500	Cargo Grid V
+83501	Cargo Grid VI
+91107	Carom
+83899	Catalytic Dust
+78506	Celerity CD01
+78507	Celerity CD02
+78508	Celerity CD03
+91374	Char
+88781	Chitinous Organics
+81611	Chumaq
+82648	Coated Armor Plates II
+83425	Coated Armor Plates III
+83426	Coated Armor Plates IV
+82134	Coilgun Ammo 1 (M)
+82133	Coilgun Ammo 1 (S)
+91377	Comet
+88887	Compressed Coolant 
+77484	Crude Extractor
+86681	Crude Matter Keep Database Fragment
+86682	Crude Matter Keep Database Fragment
+86683	Crude Matter Keep Database Fragment
+86684	Crude Matter Keep Database Fragment
+86685	Crude Matter Keep Database Fragment
+87599	Cryogenic Ejector S
+78451	Crystallizing Core Hermetite
+88335	D1 Fuel
+88319	D2 Fuel
+78429	Deep-Core Carbon Ore
+89794	Defiled Crude Matter
+85291	Deployable Beacon
+86798	Derelict C102403
+86765	Derelict C304320 Data Fragment
+86766	Derelict C304320 Data Fragment
+86767	Derelict C304320 Data Fragment
+91378	Dewdrop
+83988	Drone Signal Records
+82137	EM Disintegrator Charge (M)
+81658	EM Disintegrator Charge (S)
+83768	EM Field Array II
+83769	EM Field Array III
+83770	EM Field Array IV
+82411	EM Nanite Sequencer
+78516	EU-40 Fuel
+78437	EU-90 Fuel
+88780	Echo Chamber
+83893	Eclipsite
+83898	Eclipsite Mining Lens
+77753	Embark
+91379	Ember
+78422	Equilibrium Program Frame
+78435	Eupraxite
+86634	Exclave Keep Database Fragment
+86635	Exclave Keep Database Fragment
+86636	Exclave Keep Database Fragment
+86637	Exclave Keep Database Fragment
+86638	Exclave Keep Database Fragment
+89088	Exclave Technocore
+83623	Explo-electro Nanitic Brace II
+83624	Explo-electro Nanitic Brace III
+83625	Explo-electro Nanitic Brace IV
+83618	Explonetic-electro Nanitic Brace II 
+83619	Explonetic-electro Nanitic Brace III
+83620	Explonetic-electro Nanitic Brace IV
+83777	Explosive Field Array II
+83778	Explosive Field Array III
+83779	Explosive Field Array IV
+82410	Explosive Nanite Sequencer
+78421	Exterminata Protocol Frame
+86689	Fabricators Keep Database Fragment
+86690	Fabricators Keep Database Fragment
+86691	Fabricators Keep Database Fragment
+86692	Fabricators Keep Database Fragment
+86693	Fabricators Keep Database Fragment
+86694	Fabricators Keep Database Fragment
+88235	Feldspar Crystal Shards
+77800	Feldspar Crystals
+72244	Feral Data
+88564	Feral Echo
+87162	Field Printer
+91753	Field Printer
+87161	Field Refinery
+91752	Field Refinery
+87566	Field Storage
+91756	Field Storage
+92414	Fine Old Crude Matter
+92394	Fine Young Crude Matter
+78450	Fluid Core Hermetite
+83818	Fossilized Exotronics
+86465	Fuel Experiment Transcript 1/3
+86466	Fuel Experiment Transcript 2/3
+86467	Fuel Experiment Transcript 3/3
+91380	Glint
+83891	Gravionite
+83896	Gravionite Mining Lens
+82424	HAF
+89777	HARBINGER I
+91724	HARBINGER I
+89778	HARBINGER II
+91725	HARBINGER II
+88889	Heat Exchanger S
+88886	Heat Exchanger XS
+88071	Heavy Berth
+91707	Heavy Berth
+84955	Heavy Gate
+91712	Heavy Gate
+87120	Heavy Printer
+91702	Heavy Printer
+88064	Heavy Refinery
+91704	Heavy Refinery
+88094	Heavy Shelter
+91710	Heavy Shelter
+77917	Heavy Storage
+91715	Heavy Storage
+92404	Heavy Turret
+92407	Heavy Turret
+90887	Hop
+82140	Howitzer Ammo 1 (M)
+72960	Hull Repairer
+77811	Hydrated Sulfide Matrix
+89258	Hydrocarbon Residue
+91376	Ingot
+78426	Iridosmine Nodules
+89260	Iron-Rich Nodules
+86615	Jump Drive Test Transcription 1/5
+86616	Jump Drive Test Transcription 2/5
+86617	Jump Drive Test Transcription 3/5
+86618	Jump Drive Test Transcription 4/5
+86619	Jump Drive Test Transcription 5/5
+86695	Keeper Keep Database Fragment
+86696	Keeper Keep Database Fragment
+86697	Keeper Keep Database Fragment
+86698	Keeper Keep Database Fragment
+86699	Keeper Keep Database Fragment
+86700	Keeper Keep Database Fragment
+88783	Kerogen Tar
+83782	Kinetic Field Array II
+83783	Kinetic Field Array III
+83784	Kinetic Field Array IV
+82413	Kinetic Nanite Sequencer
+82425	LAI
+82426	LORHA
+92421	Leap
+77518	Lens 3X
+91997	Lens 9001X
+83892	Luminalis
+83897	Luminalis Mining Lens
+92390	Lunge
+82430	MAUL
+81904	MCF
+83528	Medium Cutting Laser
+78446	Methane Ice Shards
+83981	Miner Hiring Form
+88069	Mini Berth
+91705	Mini Berth
+88086	Mini Gate
+91711	Mini Gate
+87119	Mini Printer
+91700	Mini Printer
+88082	Mini Storage
+91713	Mini Storage
+92279	Mini Turret
+92280	Mini Turret
+86620	Mining Drone Behavior 1/8
+86621	Mining Drone Behavior 2/8
+86622	Mining Drone Behavior 3/8
+86623	Mining Drone Behavior 4/8
+86624	Mining Drone Behavior 5/8
+86625	Mining Drone Behavior 6/8
+86626	Mining Drone Behavior 7/8
+86627	Mining Drone Behavior 8/8
+88098	Monolith 1
+91718	Monolith 1
+88099	Monolith 2
+91719	Monolith 2
+83987	Multimedia Library
+88765	Mummified Clone
+83978	Navigational Artefact
+91871	Nest
+92166	Nest
+88092	Network Node
+83982	Network Pollinator
+77801	Nickel-Iron Veins
+82650	Nimble Armor Plates II
+83433	Nimble Armor Plates III
+83434	Nimble Armor Plates IV
+78418	Nomad Program Frame
+83985	Normalization Permit
+91978	Nursery
+92165	Nursery
+83979	Oil Painting
+83983	Old Neurocord
+73192	Ophidian Sensor Cloak
+88842	Packaged Carbon Weave
+88840	Packaged Printed Circuits
+84206	Packaged Reinforced Alloys
+88844	Packaged Thermal Composites
+99001	Palladium
+77805	Platinum-Group Veins 
+77810	Platinum-Palladium Matrix
+78447	Primitive Kerogen Matrix
+84180	Printed Circuits
+88067	Printer
+91701	Printer
+83525	Purified Moon Cutting Laser
+89780	RAINMAKER I
+91722	RAINMAKER I
+89779	RAINMAKER II
+91723	RAINMAKER II
+83894	Radiantium
+83895	Radiantium Mining Lens
+82033	Rapid Plasma (M)
+82132	Rapid Plasma Ammo 1 (M)
+82130	Rapid Plasma Ammo 1 (S)
+82131	Rapid Plasma Ammo 2 (S)
+82649	Reactive Armor Plates II
+83429	Reactive Armor Plates III
+83430	Reactive Armor Plates IV
+87846	Recurve
+91205	Redundant Module
+88063	Refinery
+91703	Refinery
+87847	Reflex
+87160	Refuge
+91751	Refuge
+84182	Reinforced Alloys
+82654	Reinforced Shield Generator II
+83456	Reinforced Shield Generator III
+83457	Reinforced Shield Generator IV
+87848	Reiver
+90184	Relay
+91717	Relay
+87375	Rich Common Ore
+77729	Rough Old Crude Matter
+78434	Rough Young Crude Matter
+89775	SEER I
+91726	SEER I
+89776	SEER II
+91727	SEER II
+84868	SOF-40 Fuel
+78515	SOF-80 Fuel
+83839	Salt
+88764	Salvaged Materials
+78453	Sediment Core Hermetite
+73314	Settler Intelligence Briefing
+88093	Shelter
+91709	Shelter
+82667	Shield Restorer II
+83458	Shield Restorer III
+83459	Shield Restorer IV
+84810	Ship chassis materials S ( copy )
+89259	Silica Grains
+77803	Silicon Dust
+91209	Singularity Reactor Fragment
+92389	Skip
+91375	Slag
+77852	Small Cutting Laser
+84556	Smart Turret
+81846	Sojourn
+91381	Soot
+77728	Sophrogon
+78452	Stale Core Hermetite
+82683	Stasis Net II
+83520	Stasis Net III
+83521	Stasis Net IV
+83522	Stasis Net V
+83523	Stasis Net VI
+92483	Still Kernel
+88565	Still Knot
+86657	Stillness Keep Database Fragment
+86658	Stillness Keep Database Fragment
+86659	Stillness Keep Database Fragment
+88083	Storage
+91714	Storage
+83980	Stranger's Head
+91106	Stride
+83984	Synod Propaganda
+89087	Synod Technocore
+83463	Synthetic Mining Lens
+82651	Systematic Armor Restorer II
+83437	Systematic Armor Restorer III
+83438	Systematic Armor Restorer IV
+81808	TADES
+78511	Tempo CD41
+78510	Tempo CD42
+78504	Tempo CD43
+88561	Thermal Composites
+83772	Thermal Field Array II
+83773	Thermal Field Array III
+83774	Thermal Field Array IV
+82412	Thermal Nanite Sequencer
+83613	Thermal-electro Nanitic Brace II
+83614	Thermal-electro Nanitic Brace III
+83615	Thermal-electro Nanitic Brace IV 
+83628	Thermalnetic Nanitic Brace II
+83629	Thermalnetic Nanitic Brace III
+83630	Thermalnetic Nanitic Brace IV
+77804	Tholin Aggregates
+78449	Tholin Nodules
+82084	Tier 2 Autocannon (S)
+82092	Tier 2 Coilgun (M)
+82088	Tier 2 Coilgun (S)
+82098	Tier 2 Howitzer (M)
+82096	Tier 2 Rapid Plasma (M)
+82086	Tier 2 Rapid Plasma (S)
+82085	Tier 3 Autocannon (S)
+82093	Tier 3 Coilgun (M)
+82089	Tier 3 Coilgun (S)
+82099	Tier 3 Howitzer (M)
+82097	Tier 3 Rapid Plasma (M)
+82087	Tier 3 Rapid Plasma (S)
+86686	Trinary Keep Database Fragment
+86687	Trinary Keep Database Fragment
+86688	Trinary Keep Database Fragment
+88234	Troilite Sulfide Grains
+81656	Tuho 7
+82090	Tuho 9
+82091	Tuho S
+92401	Turret
+92406	Turret
+92402	Turret - Autocannon
+92511	Turret - Howitzer
+92403	Turret - Plasma
+81609	USV
+87595	Unrefined Radiantium
+77818	Unstable Fuel
+86702	Vault Promotional Material
+78490	Velocity CD81
+78502	Velocity CD82
+83986	Very Strange Musical Instrument
+91206	Void Residue
+91210	Void fragments
+88100	Wall 1
+91720	Wall 1
+88101	Wall 2
+91721	Wall 2
+82682	Warp Entangler II
+83516	Warp Entangler III
+83517	Warp Entangler IV
+83518	Warp Entangler V
+83519	Warp Entangler VI
+78423	Water Ice
+87698	Wend
+81657	Xoru 7
+82094	Xoru 9
+82095	Xoru S
