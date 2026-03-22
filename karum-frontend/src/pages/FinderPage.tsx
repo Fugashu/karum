@@ -15,6 +15,7 @@ import { useCurrentAccount } from "@mysten/dapp-kit-react";
 import { useWallet } from "../hooks/use-wallet";
 import { useCharacter } from "../hooks/use-character";
 import { itemInfo } from "../services/item-types";
+import { ItemCard } from "../components/ui/ItemCard";
 import { config } from "../config";
 import type { MergedShop, ShopOffer } from "../types";
 
@@ -168,7 +169,9 @@ export function FinderPage() {
         )}
 
         {/* Shop List */}
-        {!isLoading && (
+        {!isLoading && (() => {
+          const filteredIds = new Set(filtered.map((s) => s.listing.ssu_id));
+          return (
           <div className="space-y-3">
             {filtered.length === 0 && (
               <div className="text-center py-20 text-text-dim">
@@ -177,194 +180,30 @@ export function FinderPage() {
                   : "No shops match your filters."}
               </div>
             )}
-            {filtered.map((shop) => {
-              const isMine = account?.address === shop.listing.owner;
-              const dist = distanceMap?.get(shop.listing.solar_system);
-              const distLabel = dist != null ? formatDist(dist) : null;
-              return (
-              <div
+            {shops.map((shop) => (
+              <ShopCard
                 key={shop.listing.ssu_id}
-                className={`bg-card border-2 transition-colors ${
-                  !shop.listing.is_active || !shop.isOnline
-                    ? "opacity-50 border-border"
-                    : isMine
-                      ? "border-amber/40"
-                      : "border-border hover:border-border-hover"
-                }`}
-              >
-                {/* Card header */}
-                <div className="px-5 pt-4 pb-3">
-                  {/* Row 1: status dot + name + badges + share */}
-                  <div className="flex items-center gap-2.5 mb-1">
-                    <span
-                      className={`w-2 h-2 shrink-0 ${
-                        shop.isOnline
-                          ? "bg-green shadow-[0_0_6px_rgba(74,222,128,0.6)]"
-                          : "bg-red"
-                      }`}
-                    />
-                    <Link
-                      to={`/shop/${shop.listing.ssu_id}`}
-                      className="text-base font-bold text-text leading-tight hover:text-amber transition-colors no-underline truncate"
-                    >
-                      {shop.listing.name}
-                    </Link>
-                    {isMine && (
-                      <span className="hidden sm:inline text-[9px] text-amber font-bold tracking-wider border border-amber/40 px-1.5 py-0.5">
-                        YOUR SHOP
-                      </span>
-                    )}
-                    {!shop.isOnline && (
-                      <span className="hidden sm:inline text-[9px] text-red font-bold tracking-wider">
-                        OFFLINE
-                      </span>
-                    )}
-                    {/* Desktop: solar system + distance inline */}
-                    {shop.listing.solar_system && (
-                      <Link
-                        to={`/navigation?system=${encodeURIComponent(shop.listing.solar_system)}&ssu=${encodeURIComponent(shop.listing.ssu_id)}`}
-                        className="hidden sm:inline text-[10px] text-text-dim border border-border px-1.5 py-0.5 ml-1 hover:border-amber hover:text-amber transition-colors no-underline cursor-pointer"
-                      >
-                        {shop.listing.solar_system}
-                      </Link>
-                    )}
-                    {distLabel && (
-                      <span className="hidden sm:inline text-[10px] text-text-dim ml-1">
-                        {distLabel}
-                      </span>
-                    )}
-                    <ShareButton ssuId={shop.listing.ssu_id} />
-                  </div>
-
-                  {/* Meta: owner + SSU ID + (mobile: solar system + badges) */}
-                  <div className="flex items-center gap-3 text-[10px] text-text-dim flex-wrap">
-                    <span>
-                      {ownerNames?.get(shop.listing.owner.toLowerCase()) || (
-                        <span className="font-mono">{shop.listing.owner.slice(0, 6)}...{shop.listing.owner.slice(-4)}</span>
-                      )}
-                    </span>
-                    <button
-                      type="button"
-                      className="group font-mono inline-flex items-center gap-1 hover:text-amber transition-colors cursor-pointer"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        navigator.clipboard.writeText(shop.listing.ssu_id);
-                        const el = e.currentTarget;
-                        el.dataset.copied = "true";
-                        setTimeout(() => { el.dataset.copied = ""; }, 1500);
-                      }}
-                    >
-                      <span className="group-data-[copied=true]:hidden">
-                        SSU {shop.listing.ssu_id.slice(0, 6)}...{shop.listing.ssu_id.slice(-4)}
-                      </span>
-                      <span className="hidden group-data-[copied=true]:inline text-amber">COPIED</span>
-                      <svg className="w-2.5 h-2.5 group-data-[copied=true]:hidden" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="square"><rect x="9" y="9" width="13" height="13"/><path d="M5 15H4V4h11v1"/></svg>
-                    </button>
-                    {isMine && (
-                      <span className="sm:hidden text-[9px] text-amber font-bold tracking-wider border border-amber/40 px-1.5 py-0.5">
-                        YOUR SHOP
-                      </span>
-                    )}
-                    {!shop.isOnline && (
-                      <span className="sm:hidden text-[9px] text-red font-bold tracking-wider">
-                        OFFLINE
-                      </span>
-                    )}
-                    {/* Mobile: solar system + distance pushed right */}
-                    <span className="sm:hidden ml-auto flex items-center gap-2">
-                      {distLabel && (
-                        <span className="text-text-dim">{distLabel}</span>
-                      )}
-                      {shop.listing.solar_system && (
-                        <button
-                          onClick={() => { setMobileToast(true); setTimeout(() => setMobileToast(false), 2000); }}
-                          className="text-text-dim border border-border px-1.5 py-0.5 hover:border-amber hover:text-amber transition-colors cursor-pointer"
-                        >
-                          {shop.listing.solar_system}
-                        </button>
-                      )}
-                    </span>
-                  </div>
-                  {shop.listing.description && (
-                    <p className="font-body text-text-dim text-sm leading-relaxed">
-                      {shop.listing.description}
-                    </p>
-                  )}
-                </div>
-
-                {/* Offers */}
-                <div className="px-5 pb-4">
-                  <div className="flex flex-col sm:flex-row sm:flex-wrap gap-1.5">
-                    {shop.listing.offers.map((offer, i) => {
-                      const inStock = shop.ssu?.inventory.items.find(
-                        (item) => item.type_id === offer.resource_type_id,
-                      );
-                      const isFilteredResource =
-                        filters.resourceTypeId === offer.resource_type_id;
-                      const info = itemInfo(offer.resource_type_id);
-                      const stockQty = inStock?.quantity ?? 0;
-                      const hasStock = stockQty >= offer.min_quantity;
-
-                      return (
-                        <div key={i} className="relative group w-full sm:w-auto">
-                          <button
-                            onClick={() =>
-                              setResourceType(
-                                isFilteredResource ? null : offer.resource_type_id,
-                              )
-                            }
-                            className={`w-full sm:w-auto flex items-center gap-1.5 border px-2.5 py-1 text-xs cursor-pointer transition-colors ${
-                              isFilteredResource
-                                ? "bg-amber/10 border-amber"
-                                : "bg-bg border-border hover:border-border-hover"
-                            }`}
-                          >
-                            <span className={isFilteredResource ? "text-amber" : "text-text"}>
-                              {offer.resource_name}
-                            </span>
-                            <span className="text-text-dim">·</span>
-                            <span className="text-amber font-bold">
-                              {(offer.price_per_unit / 1_000_000_000).toFixed(3)}
-                            </span>
-                            <span className="text-text-dim text-[10px]">SUI</span>
-                            <span className="text-text-dim">·</span>
-                            <span className={`font-mono ${hasStock ? "text-green" : "text-red"}`}>
-                              {hasStock ? stockQty.toLocaleString() : "0"}
-                            </span>
-                            <span className="hidden sm:inline text-text-dim text-[10px]">in stock</span>
-                          </button>
-                          {info && (
-                            <div className="absolute bottom-full left-0 mb-1 hidden group-hover:block z-50 pointer-events-none">
-                              <div className="bg-elevated border border-border px-3 py-2 text-xs whitespace-nowrap">
-                                <div className="text-text font-bold mb-0.5">{info.name}</div>
-                                <div className="text-text-dim">
-                                  {info.category} · {info.group}
-                                </div>
-                                <div className="text-text-dim">
-                                  Vol: {info.volume} · Mass: {info.mass}
-                                </div>
-                              </div>
-                            </div>
-                          )}
-                        </div>
-                      );
-                    })}
-                  </div>
-
-                  {/* Buy panel (desktop only — wallet not available on mobile) */}
-                  <div className="hidden sm:block">
-                    <BuyPanel shop={shop} onPurchase={() => refetch()} />
-                  </div>
-                </div>
-              </div>
-              );
-            })}
+                shop={shop}
+                isVisible={filteredIds.has(shop.listing.ssu_id)}
+                isMine={account?.address === shop.listing.owner}
+                distLabel={(() => {
+                  const dist = distanceMap?.get(shop.listing.solar_system);
+                  return dist != null ? formatDist(dist) : null;
+                })()}
+                filters={filters}
+                setResourceType={setResourceType}
+                setMobileToast={setMobileToast}
+                ownerNames={ownerNames}
+                refetch={refetch}
+              />
+            ))}
           </div>
-        )}
+          );
+        })()}
         {/* Mobile toast */}
         {mobileToast && (
           <div className="fixed bottom-16 left-1/2 -translate-x-1/2 z-50 bg-card border-2 border-amber px-4 py-2.5 text-xs text-amber font-bold tracking-wider">
-            Navigation is only available on desktop
+            Only available on desktop
           </div>
         )}
       </main>
@@ -375,15 +214,206 @@ export function FinderPage() {
 }
 
 // ============================================================================
+// Shop Card
+// ============================================================================
+
+function ShopCard({
+  shop,
+  isVisible,
+  isMine,
+  distLabel,
+  filters,
+  setResourceType,
+  setMobileToast,
+  ownerNames,
+  refetch,
+}: {
+  shop: MergedShop;
+  isVisible: boolean;
+  isMine: boolean;
+  distLabel: string | null;
+  filters: { resourceTypeId: number | null };
+  setResourceType: (id: number | null) => void;
+  setMobileToast: (v: boolean) => void;
+  ownerNames?: Map<string, string>;
+  refetch: () => void;
+}) {
+  const [selectedOffer, setSelectedOffer] = useState<ShopOffer | null>(null);
+
+  return (
+    <div
+      className={`bg-card border-2 transition-all duration-300 ease-in-out overflow-hidden ${
+        !isVisible
+          ? "opacity-0 max-h-0 !m-0 !p-0 !border-0"
+          : !shop.listing.is_active || !shop.isOnline
+            ? "opacity-50 border-border max-h-[800px]"
+            : isMine
+              ? "border-amber/40 max-h-[800px]"
+              : "border-border hover:border-border-hover max-h-[800px]"
+      }`}
+    >
+      {/* Card header */}
+      <div className="px-5 pt-4 pb-3">
+        <div className="flex items-center gap-2.5 mb-1">
+          <span
+            className={`w-2 h-2 shrink-0 ${
+              shop.isOnline
+                ? "bg-green shadow-[0_0_6px_rgba(74,222,128,0.6)]"
+                : "bg-red"
+            }`}
+          />
+          <Link
+            to={`/shop/${shop.listing.ssu_id}`}
+            className="text-base font-bold text-text leading-tight hover:text-amber transition-colors no-underline truncate"
+          >
+            {shop.listing.name}
+          </Link>
+          {isMine && (
+            <span className="hidden sm:inline text-[9px] text-amber font-bold tracking-wider border border-amber/40 px-1.5 py-0.5">
+              YOUR SHOP
+            </span>
+          )}
+          {!shop.isOnline && (
+            <span className="hidden sm:inline text-[9px] text-red font-bold tracking-wider">
+              OFFLINE
+            </span>
+          )}
+          {shop.listing.solar_system && (
+            <Link
+              to={`/navigation?system=${encodeURIComponent(shop.listing.solar_system)}&ssu=${encodeURIComponent(shop.listing.ssu_id)}`}
+              className="hidden sm:inline text-[10px] text-text-dim border border-border px-1.5 py-0.5 ml-1 hover:border-amber hover:text-amber transition-colors no-underline cursor-pointer"
+            >
+              {shop.listing.solar_system}
+            </Link>
+          )}
+          {distLabel && (
+            <span className="hidden sm:inline text-[10px] text-text-dim ml-1">
+              {distLabel}
+            </span>
+          )}
+          <ShareButton ssuId={shop.listing.ssu_id} />
+        </div>
+
+        <div className="flex items-center gap-3 text-[10px] text-text-dim flex-wrap">
+          <span>
+            {ownerNames?.get(shop.listing.owner.toLowerCase()) || (
+              <span className="font-mono">{shop.listing.owner.slice(0, 6)}...{shop.listing.owner.slice(-4)}</span>
+            )}
+          </span>
+          <button
+            type="button"
+            className="group font-mono inline-flex items-center gap-1 hover:text-amber transition-colors cursor-pointer"
+            onClick={(e) => {
+              e.stopPropagation();
+              navigator.clipboard.writeText(shop.listing.ssu_id);
+              const el = e.currentTarget;
+              el.dataset.copied = "true";
+              setTimeout(() => { el.dataset.copied = ""; }, 1500);
+            }}
+          >
+            <span className="group-data-[copied=true]:hidden">
+              SSU {shop.listing.ssu_id.slice(0, 6)}...{shop.listing.ssu_id.slice(-4)}
+            </span>
+            <span className="hidden group-data-[copied=true]:inline text-amber">COPIED</span>
+            <svg className="w-2.5 h-2.5 group-data-[copied=true]:hidden" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="square"><rect x="9" y="9" width="13" height="13"/><path d="M5 15H4V4h11v1"/></svg>
+          </button>
+          {isMine && (
+            <span className="sm:hidden text-[9px] text-amber font-bold tracking-wider border border-amber/40 px-1.5 py-0.5">
+              YOUR SHOP
+            </span>
+          )}
+          {!shop.isOnline && (
+            <span className="sm:hidden text-[9px] text-red font-bold tracking-wider">
+              OFFLINE
+            </span>
+          )}
+          <span className="sm:hidden ml-auto flex items-center gap-2">
+            {distLabel && (
+              <span className="text-text-dim">{distLabel}</span>
+            )}
+            {shop.listing.solar_system && (
+              <button
+                onClick={() => { setMobileToast(true); setTimeout(() => setMobileToast(false), 2000); }}
+                className="text-text-dim border border-border px-1.5 py-0.5 hover:border-amber hover:text-amber transition-colors cursor-pointer"
+              >
+                {shop.listing.solar_system}
+              </button>
+            )}
+          </span>
+        </div>
+        {shop.listing.description && (
+          <p className="font-body text-text-dim text-sm leading-relaxed">
+            {shop.listing.description}
+          </p>
+        )}
+      </div>
+
+      {/* Offers */}
+      <div className="px-5 pb-4">
+        <div className="flex flex-wrap gap-1.5 mb-2">
+          {shop.listing.offers.map((offer, i) => {
+            const inStock = shop.ssu?.inventory.items.find(
+              (item) => item.type_id === offer.resource_type_id,
+            );
+            const isFilteredResource =
+              filters.resourceTypeId === offer.resource_type_id;
+            const stockQty = inStock?.quantity ?? 0;
+            const available = stockQty >= offer.min_quantity;
+
+            return (
+              <ItemCard
+                key={i}
+                typeId={offer.resource_type_id}
+                name={offer.resource_name}
+                quantity={stockQty}
+                price={offer.price_per_unit}
+                highlight={isFilteredResource}
+                canBuy={available && shop.isOnline}
+                onClick={() =>
+                  setResourceType(
+                    isFilteredResource ? null : offer.resource_type_id,
+                  )
+                }
+                {...(!isMine && {
+                  onBuy: () => setSelectedOffer(offer),
+                  onMobileBuy: () => {
+                    setMobileToast(true);
+                    setTimeout(() => setMobileToast(false), 2000);
+                  },
+                })}
+              />
+            );
+          })}
+        </div>
+
+        {/* Buy panel — only visible when an offer is selected via ItemCard BUY */}
+        <div className="hidden sm:block">
+          <BuyPanel
+            shop={shop}
+            onPurchase={() => refetch()}
+            selectedOffer={selectedOffer}
+            onClear={() => setSelectedOffer(null)}
+          />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ============================================================================
 // Buy Panel
 // ============================================================================
 
-function BuyPanel({ shop, onPurchase }: { shop: MergedShop; onPurchase: () => void }) {
+function BuyPanel({ shop, onPurchase, selectedOffer, onClear }: {
+  shop: MergedShop;
+  onPurchase: () => void;
+  selectedOffer: ShopOffer | null;
+  onClear: () => void;
+}) {
   const { isConnected, handleConnect, eveVault, walletAddress } = useWallet();
   const { character, loading: charLoading } = useCharacter(isConnected ? walletAddress : undefined);
   const dAppKit = useDAppKit();
 
-  const [selectedOffer, setSelectedOffer] = useState<ShopOffer | null>(null);
   const [quantity, setQuantity] = useState("1");
   const [characterId, setCharacterId] = useState("");
   const [charPrefilled, setCharPrefilled] = useState(false);
@@ -431,7 +461,7 @@ function BuyPanel({ shop, onPurchase }: { shop: MergedShop; onPurchase: () => vo
       const digest = (result as any).digest ?? "submitted";
       setStatus("success");
       setMessage(`Purchased ${qty}x ${selectedOffer.resource_name}! Tx: ${digest}`);
-      setSelectedOffer(null);
+      onClear();
       onPurchase();
     } catch (e: any) {
       setStatus("error");
@@ -447,6 +477,7 @@ function BuyPanel({ shop, onPurchase }: { shop: MergedShop; onPurchase: () => vo
   const isOwner = isConnected && walletAddress && walletAddress === shop.listing.owner;
   if (!shop.isOnline) return null;
   if (isOwner) return null;
+  if (!selectedOffer && !message) return null;
 
   return (
     <div className="mt-3 pt-3 border-t border-border/50">
@@ -457,31 +488,7 @@ function BuyPanel({ shop, onPurchase }: { shop: MergedShop; onPurchase: () => vo
         >
           {eveVault ? "CONNECT EVE VAULT TO BUY" : "NO EVE VAULT"}
         </button>
-      ) : !selectedOffer ? (
-        <div className="flex flex-wrap gap-1.5 items-center">
-          <span className="text-[10px] text-text-dim tracking-wider mr-1">BUY</span>
-          {shop.listing.offers.map((offer, i) => {
-            const stock = shop.ssu?.inventory.items.find(
-              (item) => item.type_id === offer.resource_type_id,
-            );
-            const available = stock && stock.quantity >= offer.min_quantity;
-            return (
-              <button
-                key={i}
-                onClick={() => available ? setSelectedOffer(offer) : undefined}
-                disabled={!available}
-                className={`px-2.5 py-1 border text-xs ${
-                  available
-                    ? "border-amber/50 text-amber hover:bg-amber/10 cursor-pointer"
-                    : "border-border text-text-dim opacity-30 cursor-not-allowed"
-                }`}
-              >
-                {offer.resource_name}
-              </button>
-            );
-          })}
-        </div>
-      ) : (
+      ) : selectedOffer ? (
         <div className="space-y-2.5">
           {/* Header */}
           <div className="flex items-center gap-3 flex-wrap">
@@ -490,8 +497,8 @@ function BuyPanel({ shop, onPurchase }: { shop: MergedShop; onPurchase: () => vo
               @ {(selectedOffer.price_per_unit / 1_000_000_000).toFixed(4)} SUI per unit
             </span>
             <button
-              onClick={() => { setSelectedOffer(null); setStatus("idle"); setMessage(""); }}
-              className="text-[10px] text-text-dim hover:text-red ml-auto tracking-wider"
+              onClick={() => { onClear(); setStatus("idle"); setMessage(""); }}
+              className="text-[10px] text-text-dim hover:text-red ml-auto tracking-wider cursor-pointer"
             >
               CANCEL
             </button>
@@ -555,7 +562,19 @@ function BuyPanel({ shop, onPurchase }: { shop: MergedShop; onPurchase: () => vo
             </p>
           )}
         </div>
-      )}
+      ) : message ? (
+        <p
+          className={`text-xs border px-3 py-2 ${
+            status === "success"
+              ? "text-green border-green/30 bg-green/5"
+              : status === "error"
+                ? "text-red border-red/30 bg-red/5"
+                : "text-text-mid border-border"
+          }`}
+        >
+          {message}
+        </p>
+      ) : null}
     </div>
   );
 }

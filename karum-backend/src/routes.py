@@ -1,9 +1,13 @@
+import json
+
 import networkx as nx
 from fastapi import APIRouter, HTTPException
+from fastapi.responses import FileResponse
 from pydantic import BaseModel, Field
 
 from src.graph import GameData
 from src.calculator import calculate_fuel
+from src.constants import ITEMS_FILE, IMAGES_DIR
 
 router = APIRouter()
 
@@ -212,3 +216,57 @@ async def graph_stats() -> dict:
         "ships": len(game_data.ships) if game_data else 0,
         "fuel_types": len(game_data.fuel_types) if game_data else 0,
     }
+
+
+# ---------------------------------------------------------------------------
+# Items & Images
+# ---------------------------------------------------------------------------
+
+_items_cache: list[dict] | None = None
+
+
+def _load_items() -> list[dict]:
+    global _items_cache
+    if _items_cache is not None:
+        return _items_cache
+
+    if not ITEMS_FILE.exists():
+        raise HTTPException(status_code=503, detail="items.json not found")
+
+    with open(ITEMS_FILE) as f:
+        _items_cache = json.load(f)
+    return _items_cache
+
+
+@router.get("/items")
+async def list_items() -> list[dict]:
+    """Return all game items from the World API snapshot."""
+    return _load_items()
+
+
+@router.get("/items/{type_id}")
+async def get_item(type_id: int) -> dict:
+    """Return a single item by type ID."""
+    items = _load_items()
+    for item in items:
+        if item["id"] == type_id:
+            return item
+    raise HTTPException(status_code=404, detail=f"Item {type_id} not found")
+
+
+@router.get("/items/{type_id}/icon")
+async def get_item_icon(type_id: int) -> FileResponse:
+    """Return the icon PNG for an item by type ID.
+
+    Looks for `{type_id}.png` in the images directory.
+    Falls back to `default.png` if no specific icon exists.
+    """
+    icon_path = IMAGES_DIR / f"{type_id}.png"
+    if icon_path.is_file():
+        return FileResponse(icon_path, media_type="image/png")
+
+    default_path = IMAGES_DIR / "default.png"
+    if default_path.is_file():
+        return FileResponse(default_path, media_type="image/png")
+
+    raise HTTPException(status_code=404, detail=f"No icon for item {type_id}")

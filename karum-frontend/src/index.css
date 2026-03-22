@@ -37,6 +37,11 @@ body {
   border-radius: 0 !important;
 }
 
+/* Always show scrollbar to prevent layout shift */
+html {
+  overflow-y: scroll;
+}
+
 /* Body text uses DM Sans */
 .font-body {
   font-family: var(--font-sans);

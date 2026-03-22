@@ -4,4 +4,8 @@ __pycache__/
 .env.local
 .pytest_cache/
 .coverage
-data/
+data/*
+!data/images/
+data/images/*
+!data/images/icons/
+!data/items.json
