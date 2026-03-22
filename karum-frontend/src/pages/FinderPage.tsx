@@ -14,7 +14,6 @@ import { SearchSelect, type SearchSelectItem } from "../components/ui/SearchSele
 import { useCurrentAccount } from "@mysten/dapp-kit-react";
 import { useWallet } from "../hooks/use-wallet";
 import { useCharacter } from "../hooks/use-character";
-import { itemInfo } from "../services/item-types";
 import { ItemCard } from "../components/ui/ItemCard";
 import { config } from "../config";
 import type { MergedShop, ShopOffer } from "../types";
