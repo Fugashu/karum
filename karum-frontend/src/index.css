@@ -47,3 +47,13 @@ html {
   font-family: var(--font-sans);
   font-size: 16px;
 }
+
+/* Page transition fade */
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.animate-fade-in {
+  animation: fade-in 0.2s ease-in-out;
+}

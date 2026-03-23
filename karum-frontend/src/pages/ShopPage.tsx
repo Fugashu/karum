@@ -7,7 +7,7 @@ import { useWallet } from "../hooks/use-wallet";
 import { useCharacter } from "../hooks/use-character";
 import { useOwnerNames } from "../hooks/use-owner-names";
 import { useRemoveShop } from "../hooks/use-deactivate-shop";
-import { Header } from "../components/Header";
+
 import { itemInfo } from "../services/item-types";
 import { config } from "../config";
 import type { MergedShop, ShopOffer } from "../types";
@@ -27,7 +27,7 @@ export function ShopPage() {
 
   return (
     <div className="min-h-screen bg-bg">
-      <Header activePage="/" />
+
 
       <main className="max-w-3xl mx-auto px-4 py-8">
         {/* Back link */}

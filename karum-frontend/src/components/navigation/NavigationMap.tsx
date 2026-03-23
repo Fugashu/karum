@@ -46,21 +46,10 @@ export const NavigationMap = forwardRef<NavigationMapHandle, NavigationMapProps>
       }, 400);
     }, [progress, fromCache]);
 
-    const [canvasReady, setCanvasReady] = useState(false);
-
-    useEffect(() => {
-      if (systems.length > 0) {
-        requestAnimationFrame(() => setCanvasReady(true));
-      }
-    }, [systems.length > 0]);
-
     return (
       <div className="relative flex-1 min-w-0 h-full bg-[#0f0f0f]">
         {systems.length > 0 && (
-          <div
-            className="w-full h-full transition-opacity duration-[3000ms] ease-out"
-            style={{ opacity: canvasReady ? 1 : 0 }}
-          >
+          <div className="w-full h-full">
           <Canvas
             camera={{ position: [0, 0, 500], fov: 60, near: 0.1, far: 10000 }}
             gl={{ antialias: false, alpha: false }}

@@ -8,7 +8,7 @@ import { useUniverse } from "../hooks/use-universe";
 import { usePersisted } from "../hooks/use-persisted";
 import { useShopDistances } from "../hooks/use-shop-distances";
 import { useOwnerNames } from "../hooks/use-owner-names";
-import { Header } from "../components/Header";
+
 import { Footer } from "../components/Footer";
 import { SearchSelect, type SearchSelectItem } from "../components/ui/SearchSelect";
 import { useCurrentAccount } from "@mysten/dapp-kit-react";
@@ -76,7 +76,7 @@ export function FinderPage() {
 
   return (
     <div className="min-h-screen bg-bg">
-      <Header activePage="/" />
+
 
       <main className="max-w-4xl mx-auto px-4 py-6 pb-16">
         {/* Reload + Search */}

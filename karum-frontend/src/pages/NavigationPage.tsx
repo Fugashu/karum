@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect, useMemo } from "react";
 import { useSearchParams } from "react-router-dom";
-import { Header } from "../components/Header";
+
 import { NavigationMap, type NavigationMapHandle } from "../components/navigation/NavigationMap";
 import { NavigationSidebar } from "../components/navigation/NavigationSidebar";
 import { ShopSidebar } from "../components/navigation/ShopSidebar";
@@ -37,8 +37,8 @@ export function NavigationPage() {
   }, [systemParam, resolvedParam, universe]);
 
   return (
-    <div className="h-screen bg-bg flex flex-col overflow-hidden">
-      <Header activePage="/navigation" />
+    <div className="h-full bg-bg flex flex-col overflow-hidden">
+
 
       <div className="flex flex-1 min-h-0 overflow-hidden">
         <ShopSidebar

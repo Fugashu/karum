@@ -2,7 +2,7 @@ import { useState, useMemo } from "react";
 import { Transaction } from "@mysten/sui/transactions";
 import { useDAppKit } from "@mysten/dapp-kit-react";
 import { useWallet } from "../hooks/use-wallet";
-import { Header } from "../components/Header";
+
 import { Footer } from "../components/Footer";
 import { SearchSelect, type SearchSelectItem } from "../components/ui/SearchSelect";
 import { useRegisterShop } from "../hooks/use-register-shop";
@@ -51,7 +51,7 @@ export function RegisterPage() {
 
   return (
     <div className="min-h-screen bg-bg">
-      <Header activePage="/register" />
+
 
       <main className="max-w-2xl mx-auto px-4 py-12 pb-16">
         <h2 className="text-xl font-bold tracking-wider mb-6">

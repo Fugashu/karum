@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { useWallet } from "../hooks/use-wallet";
 
 const NAV_ITEMS = [
@@ -7,12 +7,10 @@ const NAV_ITEMS = [
   { href: "/register", label: "REGISTER", hideOnMobile: true },
 ];
 
-interface HeaderProps {
-  activePage: "/" | "/register" | "/navigation" | "/history" | "/shop";
-}
-
-export function Header({ activePage }: HeaderProps) {
+export function Header() {
   const { isConnected, eveVault, walletAddress, handleConnect, handleDisconnect } = useWallet();
+  const { pathname } = useLocation();
+  const activePage = pathname === "/" ? "/" : `/${pathname.split("/")[1]}`;
 
   return (
     <header className="border-b-2 border-border px-6 py-4 flex items-center shrink-0">

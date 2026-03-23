@@ -1,5 +1,5 @@
 import { useCurrentAccount } from "@mysten/dapp-kit-react";
-import { Header } from "../components/Header";
+
 import { Footer } from "../components/Footer";
 import { useShops } from "../hooks/use-shops";
 import { usePurchaseHistory } from "../hooks/use-purchase-history";
@@ -29,7 +29,7 @@ export function HistoryPage() {
 
   return (
     <div className="min-h-screen bg-bg">
-      <Header activePage="/history" />
+
 
       <main className="max-w-3xl mx-auto px-4 py-8 pb-16">
         <h2 className="text-sm font-bold tracking-[0.1em] uppercase text-text mb-6">
