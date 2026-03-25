@@ -5,10 +5,8 @@
 
 import { useState, useEffect } from "react";
 import { config } from "../config";
+import { getEnvConfig } from "../env-config";
 
-const WORLD_PKG =
-  "0xd12a70c74c1e759445d6f209b01d43d860e97fcf2ef72ccbbd00afd828043f75";
-const CHARACTER_TYPE = `${WORLD_PKG}::character::Character`;
 const GRAPHQL_URL = config.sui.graphqlUrl;
 
 interface CharacterInfo {
@@ -57,9 +55,10 @@ export function useCharacter(walletAddress: string | undefined) {
 async function lookupCharacter(
   walletAddress: string,
 ): Promise<CharacterInfo | null> {
+  const characterType = `${getEnvConfig().worldPackageId}::character::Character`;
   const query = `{
     objects(
-      filter: { type: "${CHARACTER_TYPE}" }
+      filter: { type: "${characterType}" }
       first: 50
     ) {
       nodes {
