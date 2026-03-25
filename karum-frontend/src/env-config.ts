@@ -38,8 +38,8 @@ export const ENV_CONFIGS: Record<EveEnvironment, EnvironmentConfig> = {
       "https://utopia.karum.fugashu.dev",
     worldPackageId: "0xd12a70c74c1e759445d6f209b01d43d860e97fcf2ef72ccbbd00afd828043f75",
     energyConfigId: "0x9285364e8104c04380d9cc4a001bbdfc81a554aad441c2909c2d3bd52a0c9c62",
-    vendorPackageId: "0x3869cbe91e9c9196ec4599b7384aff4deddc71771a131af219ece0f700aa8586",
-    vendorConfigId: "0x5a2e1f7c7ebc90d6680bb9c1e05ad2974d93f756a49179bc849e378fc7064520",
+    vendorPackageId: import.meta.env.VITE_UTOPIA_VENDOR_PACKAGE_ID || "0x3869cbe91e9c9196ec4599b7384aff4deddc71771a131af219ece0f700aa8586",
+    vendorConfigId: import.meta.env.VITE_UTOPIA_VENDOR_CONFIG_ID || "0x5a2e1f7c7ebc90d6680bb9c1e05ad2974d93f756a49179bc849e378fc7064520",
   },
 };
 
