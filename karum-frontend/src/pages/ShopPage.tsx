@@ -225,8 +225,8 @@ function ShopDetail({ shop, ownerNames }: { shop: MergedShop; ownerNames?: Map<s
         </div>
       </div>
 
-      {/* Buy panel (desktop only — wallet not available on mobile) */}
-      <div className="hidden sm:block px-6 pb-5">
+      {/* Buy panel */}
+      <div className="px-6 pb-5">
         <ShopBuyPanel shop={shop} />
       </div>
 

@@ -9,7 +9,6 @@ interface ItemCardProps {
   canBuy?: boolean;
   onClick?: () => void;
   onBuy?: () => void;
-  onMobileBuy?: () => void;
 }
 
 const API = config.karum.apiUrl;
@@ -23,7 +22,6 @@ export function ItemCard({
   canBuy = false,
   onClick,
   onBuy,
-  onMobileBuy,
 }: ItemCardProps) {
   const iconUrl = `${API}/api/items/${typeId}/icon`;
   const hasStock = quantity > 0;
@@ -82,31 +80,19 @@ export function ItemCard({
         </div>
       </button>
 
-      {/* Buy button — desktop triggers buy flow, mobile shows toast */}
-      {(onBuy || onMobileBuy) && (
-        <>
-          {/* Desktop */}
-          <button
-            type="button"
-            onClick={(e) => { e.stopPropagation(); onBuy?.(); }}
-            disabled={!canBuy}
-            className={`hidden sm:block w-full py-1 text-[9px] font-bold tracking-wider border-t transition-colors duration-200 ${
-              canBuy
-                ? "border-amber/30 text-amber hover:bg-amber/15 cursor-pointer"
-                : "border-border text-text-dim opacity-30 cursor-not-allowed"
-            }`}
-          >
-            BUY
-          </button>
-          {/* Mobile — greyed out, shows toast */}
-          <button
-            type="button"
-            onClick={(e) => { e.stopPropagation(); onMobileBuy?.(); }}
-            className="sm:hidden w-full py-1 text-[9px] font-bold tracking-wider border-t border-border text-text-dim opacity-30 cursor-pointer"
-          >
-            BUY
-          </button>
-        </>
+      {onBuy && (
+        <button
+          type="button"
+          onClick={(e) => { e.stopPropagation(); onBuy?.(); }}
+          disabled={!canBuy}
+          className={`w-full py-1 text-[9px] font-bold tracking-wider border-t transition-colors duration-200 ${
+            canBuy
+              ? "border-amber/30 text-amber hover:bg-amber/15 cursor-pointer"
+              : "border-border text-text-dim opacity-30 cursor-not-allowed"
+          }`}
+        >
+          BUY
+        </button>
       )}
     </div>
   );

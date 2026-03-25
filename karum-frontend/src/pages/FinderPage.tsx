@@ -36,7 +36,6 @@ function formatDist(raw: number): string {
 
 export function FinderPage() {
   const { data: shops = [], isLoading, error, refetch, isFetching } = useShops();
-  const [mobileToast, setMobileToast] = useState(false);
   const { universe } = useUniverse();
   const [myLocation, setMyLocation] = usePersisted<string | null>("karum:my-location", null);
 
@@ -188,7 +187,6 @@ export function FinderPage() {
                 })()}
                 filters={filters}
                 setResourceType={setResourceType}
-                setMobileToast={setMobileToast}
                 ownerNames={ownerNames}
                 refetch={refetch}
               />
@@ -196,12 +194,6 @@ export function FinderPage() {
           </div>
           );
         })()}
-        {/* Mobile toast */}
-        {mobileToast && (
-          <div className="fixed bottom-16 left-1/2 -translate-x-1/2 z-50 bg-card border-2 border-amber px-4 py-2.5 text-xs text-amber font-bold tracking-wider">
-            Only available on desktop
-          </div>
-        )}
       </main>
 
       <Footer />
@@ -220,7 +212,6 @@ function ShopCard({
   distLabel,
   filters,
   setResourceType,
-  setMobileToast,
   ownerNames,
   refetch,
 }: {
@@ -230,7 +221,6 @@ function ShopCard({
   distLabel: string | null;
   filters: { resourceTypeId: number | null };
   setResourceType: (id: number | null) => void;
-  setMobileToast: (v: boolean) => void;
   ownerNames?: Map<string, string>;
   refetch: () => void;
 }) {
@@ -328,12 +318,12 @@ function ShopCard({
               <span className="text-text-dim">{distLabel}</span>
             )}
             {shop.listing.solar_system && (
-              <button
-                onClick={() => { setMobileToast(true); setTimeout(() => setMobileToast(false), 2000); }}
-                className="text-text-dim border border-border px-1.5 py-0.5 hover:border-amber hover:text-amber transition-colors cursor-pointer"
+              <Link
+                to={`/navigation?system=${encodeURIComponent(shop.listing.solar_system)}&ssu=${encodeURIComponent(shop.listing.ssu_id)}`}
+                className="text-text-dim border border-border px-1.5 py-0.5 hover:border-amber hover:text-amber transition-colors no-underline"
               >
                 {shop.listing.solar_system}
-              </button>
+              </Link>
             )}
           </span>
         </div>
@@ -372,10 +362,6 @@ function ShopCard({
                 }
                 {...(!isMine && {
                   onBuy: () => setSelectedOffer(offer),
-                  onMobileBuy: () => {
-                    setMobileToast(true);
-                    setTimeout(() => setMobileToast(false), 2000);
-                  },
                 })}
               />
             );
@@ -383,7 +369,7 @@ function ShopCard({
         </div>
 
         {/* Buy panel — only visible when an offer is selected via ItemCard BUY */}
-        <div className="hidden sm:block">
+        <div>
           <BuyPanel
             shop={shop}
             onPurchase={() => refetch()}
