@@ -5,13 +5,11 @@
 
 import { Transaction } from "@mysten/sui/transactions";
 import { config } from "../config";
+import { getEnvConfig } from "../env-config";
 
 const PACKAGE_ID = config.sui.packageId;
 const REGISTRY_ID = config.sui.registryId;
 const CLOCK = "0x6";
-
-const VENDOR_PACKAGE = config.vendor.packageId;
-const VENDOR_CONFIG = config.vendor.configId;
 
 interface OfferInput {
   resourceName: string;
@@ -61,11 +59,12 @@ export function buildRegisterShopTx(
     });
 
     // Also set price in VendorConfig (for on-chain buy enforcement)
-    if (VENDOR_PACKAGE && VENDOR_CONFIG) {
+    const envCfg = getEnvConfig();
+    if (envCfg.vendorPackageId && envCfg.vendorConfigId) {
       tx.moveCall({
-        target: `${VENDOR_PACKAGE}::vendor::set_price`,
+        target: `${envCfg.vendorPackageId}::vendor::set_price`,
         arguments: [
-          tx.object(VENDOR_CONFIG),
+          tx.object(envCfg.vendorConfigId),
           tx.pure.address(ssuId),
           tx.pure.u64(offer.resourceTypeId),
           tx.pure.u64(offer.pricePerUnit),

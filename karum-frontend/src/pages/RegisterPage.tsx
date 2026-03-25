@@ -12,12 +12,9 @@ import { suiClient } from "../services/sui-client";
 import { fetchSSU } from "../services/gateway";
 import { fetchShop } from "../services/registry-reader";
 import { itemName } from "../services/item-types";
-import { config } from "../config";
+import { getEnvConfig } from "../env-config";
 import type { SSUData, InventoryItem } from "../types";
 
-import { getEnvConfig } from "../env-config";
-
-const VENDOR_PKG = config.vendor.packageId;
 
 interface OfferRow {
   item: InventoryItem;
@@ -338,7 +335,7 @@ function SetupFlow() {
       });
 
       tx.moveCall({
-        target: `${VENDOR_PKG}::vendor::authorize`,
+        target: `${getEnvConfig().vendorPackageId}::vendor::authorize`,
         arguments: [tx.object(id), ownerCap],
       });
 

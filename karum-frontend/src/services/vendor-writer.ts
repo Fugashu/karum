@@ -7,10 +7,7 @@
  */
 
 import { Transaction } from "@mysten/sui/transactions";
-import { config } from "../config";
-
-const VENDOR_PACKAGE = config.vendor.packageId;
-const VENDOR_CONFIG = config.vendor.configId;
+import { getEnvConfig } from "../env-config";
 
 /**
  * Build a PTB that authorizes the Karum extension on an SSU.
@@ -24,7 +21,7 @@ export function buildAuthorizeTx(
 ): Transaction {
   const tx = new Transaction();
   tx.moveCall({
-    target: `${VENDOR_PACKAGE}::vendor::authorize`,
+    target: `${getEnvConfig().vendorPackageId}::vendor::authorize`,
     arguments: [
       tx.object(storageUnitId),
       tx.object(ownerCapId),
@@ -50,9 +47,9 @@ export function buildSetPriceTx(
 ): Transaction {
   const tx = new Transaction();
   tx.moveCall({
-    target: `${VENDOR_PACKAGE}::vendor::set_price`,
+    target: `${getEnvConfig().vendorPackageId}::vendor::set_price`,
     arguments: [
-      tx.object(VENDOR_CONFIG),
+      tx.object(getEnvConfig().vendorConfigId),
       tx.pure.address(ssuId),
       tx.pure.u64(typeId),
       tx.pure.u64(pricePerUnit),
@@ -71,9 +68,9 @@ export function buildRemovePriceTx(
 ): Transaction {
   const tx = new Transaction();
   tx.moveCall({
-    target: `${VENDOR_PACKAGE}::vendor::remove_price`,
+    target: `${getEnvConfig().vendorPackageId}::vendor::remove_price`,
     arguments: [
-      tx.object(VENDOR_CONFIG),
+      tx.object(getEnvConfig().vendorConfigId),
       tx.pure.address(ssuId),
       tx.pure.u64(typeId),
     ],
@@ -106,9 +103,9 @@ export function buildBuyTx(
   const [payment] = tx.splitCoins(tx.gas, [tx.pure.u64(totalPriceMist)]);
 
   tx.moveCall({
-    target: `${VENDOR_PACKAGE}::vendor::buy`,
+    target: `${getEnvConfig().vendorPackageId}::vendor::buy`,
     arguments: [
-      tx.object(VENDOR_CONFIG),
+      tx.object(getEnvConfig().vendorConfigId),
       tx.object(storageUnitId),
       tx.object(buyerCharacterId),
       tx.pure.u64(typeId),
@@ -131,9 +128,9 @@ export function buildSetPricesBatchTx(
   const tx = new Transaction();
   for (const p of prices) {
     tx.moveCall({
-      target: `${VENDOR_PACKAGE}::vendor::set_price`,
+      target: `${getEnvConfig().vendorPackageId}::vendor::set_price`,
       arguments: [
-        tx.object(VENDOR_CONFIG),
+        tx.object(getEnvConfig().vendorConfigId),
         tx.pure.address(ssuId),
         tx.pure.u64(p.typeId),
         tx.pure.u64(p.pricePerUnit),

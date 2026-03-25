@@ -15,11 +15,8 @@ import { useCurrentAccount } from "@mysten/dapp-kit-react";
 import { useWallet } from "../hooks/use-wallet";
 import { useCharacter } from "../hooks/use-character";
 import { ItemCard } from "../components/ui/ItemCard";
-import { config } from "../config";
+import { getEnvConfig } from "../env-config";
 import type { MergedShop, ShopOffer } from "../types";
-
-const VENDOR_PKG = config.vendor.packageId;
-const VENDOR_CONFIG = config.vendor.configId;
 
 const SORT_OPTIONS: { value: SortMode; label: string }[] = [
   { value: "stock-desc", label: "MOST STOCK" },
@@ -441,10 +438,11 @@ function BuyPanel({ shop, onPurchase, selectedOffer, onClear }: {
       const tx = new Transaction();
       const [payment] = tx.splitCoins(tx.gas, [tx.pure.u64(totalPrice)]);
 
+      const envCfg = getEnvConfig();
       tx.moveCall({
-        target: `${VENDOR_PKG}::vendor::buy`,
+        target: `${envCfg.vendorPackageId}::vendor::buy`,
         arguments: [
-          tx.object(VENDOR_CONFIG),
+          tx.object(envCfg.vendorConfigId),
           tx.object(shop.listing.ssu_id),
           tx.object(characterId.trim()),
           tx.pure.u64(selectedOffer.resource_type_id),
