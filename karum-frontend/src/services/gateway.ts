@@ -10,7 +10,7 @@
  * are both dead. Direct Sui RPC is the only path to live SSU data.
  */
 
-import { config } from "../config";
+import { getEnvConfig } from "../env-config";
 import { suiClient } from "./sui-client";
 import type {
   SSUData,
@@ -54,7 +54,10 @@ export interface ShipDetail extends Ship {
   capacitor: { capacity: number; rechargeRate: number };
 }
 
-const WORLD_API = config.eve.worldApi;
+/** Read World API base URL dynamically so it updates when the environment toggles. */
+function getWorldApi(): string {
+  return getEnvConfig().worldApi;
+}
 
 export type ProgressCallback = (progress: number) => void;
 
@@ -72,7 +75,7 @@ async function fetchAllPaginated<T>(
 
   try {
     while (true) {
-      const res = await fetch(`${WORLD_API}${endpoint}?limit=${limit}&offset=${offset}`);
+      const res = await fetch(`${getWorldApi()}${endpoint}?limit=${limit}&offset=${offset}`);
       if (!res.ok) throw new Error(`World API ${endpoint}: ${res.status}`);
       const data: PaginatedResponse<T> = await res.json();
       all.push(...data.data);
@@ -98,7 +101,7 @@ export async function fetchGameTypes(
   offset = 0,
 ): Promise<PaginatedResponse<GameType>> {
   const res = await fetch(
-    `${WORLD_API}/v2/types?limit=${limit}&offset=${offset}`,
+    `${getWorldApi()}/v2/types?limit=${limit}&offset=${offset}`,
   );
   if (!res.ok) throw new Error(`World API /v2/types: ${res.status}`);
   return res.json();
@@ -106,7 +109,7 @@ export async function fetchGameTypes(
 
 /** Fetch a single game type by ID. */
 export async function fetchGameType(typeId: number): Promise<GameType> {
-  const res = await fetch(`${WORLD_API}/v2/types/${typeId}`);
+  const res = await fetch(`${getWorldApi()}/v2/types/${typeId}`);
   if (!res.ok) throw new Error(`World API /v2/types/${typeId}: ${res.status}`);
   return res.json();
 }
@@ -117,7 +120,7 @@ export async function fetchSolarSystems(
   offset = 0,
 ): Promise<PaginatedResponse<SolarSystem>> {
   const res = await fetch(
-    `${WORLD_API}/v2/solarsystems?limit=${limit}&offset=${offset}`,
+    `${getWorldApi()}/v2/solarsystems?limit=${limit}&offset=${offset}`,
   );
   if (!res.ok) throw new Error(`World API /v2/solarsystems: ${res.status}`);
   return res.json();
@@ -125,7 +128,7 @@ export async function fetchSolarSystems(
 
 /** Fetch a single solar system by ID. */
 export async function fetchSolarSystem(id: number): Promise<SolarSystem> {
-  const res = await fetch(`${WORLD_API}/v2/solarsystems/${id}`);
+  const res = await fetch(`${getWorldApi()}/v2/solarsystems/${id}`);
   if (!res.ok)
     throw new Error(`World API /v2/solarsystems/${id}: ${res.status}`);
   return res.json();
@@ -138,7 +141,7 @@ export async function fetchShips(onProgress?: ProgressCallback): Promise<Ship[]>
 
 /** Fetch ship detail by ID. */
 export async function fetchShipDetail(id: number): Promise<ShipDetail> {
-  const res = await fetch(`${WORLD_API}/v2/ships/${id}`);
+  const res = await fetch(`${getWorldApi()}/v2/ships/${id}`);
   if (!res.ok) throw new Error(`World API /v2/ships/${id}: ${res.status}`);
   return res.json();
 }
@@ -257,6 +260,7 @@ export async function fetchSSU(objectId: string): Promise<SSUData | null> {
     const ssu: SSUData = {
       objectId,
       itemId: parseInt(String(key.item_id ?? "0"), 10),
+      tenant: String(key.tenant ?? ""),
       name: String(metadata.name ?? ""),
       description: String(metadata.description ?? ""),
       dappUrl: String(metadata.url ?? ""),

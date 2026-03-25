@@ -1,6 +1,8 @@
-import { config } from "../config";
+import { getEnvConfig } from "../env-config";
 
-const API = config.karum.apiUrl;
+function getApi(): string {
+  return getEnvConfig().karumApi;
+}
 
 export interface RouteStep {
   system_id: number;
@@ -44,7 +46,7 @@ export async function fetchBatchDistances(
 ): Promise<DistanceEntry[]> {
   const start = performance.now();
 
-  const res = await fetch(`${API}/api/distances`, {
+  const res = await fetch(`${getApi()}/api/distances`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ from_system_id: fromSystemId, to_system_ids: toSystemIds }),
@@ -64,7 +66,7 @@ export async function fetchBatchDistances(
 export async function calculateRoute(req: CalculateRequest): Promise<CalculateResponse> {
   const start = performance.now();
 
-  const res = await fetch(`${API}/api/calculate`, {
+  const res = await fetch(`${getApi()}/api/calculate`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(req),

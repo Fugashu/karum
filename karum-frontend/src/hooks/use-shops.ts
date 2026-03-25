@@ -5,6 +5,8 @@
 
 import { useQuery } from "@tanstack/react-query";
 import { config } from "../config";
+import { getActiveEnv } from "../env-config";
+import { useEnvironment } from "../context/EnvironmentContext";
 import { fetchAllShops } from "../services/registry-reader";
 import { fetchSSUBatch } from "../services/gateway";
 import { getMockMergedShops } from "../services/mock-data";
@@ -30,7 +32,7 @@ async function fetchAndMerge(): Promise<MergedShop[]> {
     const ssuMap = await fetchSSUBatch(ssuIds);
 
     // 3. Merge
-    return listings.map((listing) => {
+    const merged = listings.map((listing) => {
       const ssu = ssuMap.get(listing.ssu_id) ?? null;
       const isOnline = ssu?.state === "online";
       const fuelPercent = ssu?.fuel
@@ -48,6 +50,12 @@ async function fetchAndMerge(): Promise<MergedShop[]> {
 
       return { listing, ssu, isOnline, fuelPercent, totalStock, hasDiscrepancy };
     });
+
+    // 4. Filter by active environment tenant
+    const activeEnv = getActiveEnv();
+    return merged.filter(
+      (shop) => !shop.ssu?.tenant || shop.ssu.tenant === activeEnv,
+    );
   } catch (err) {
     console.error("[use-shops] Fetch failed, falling back to mock data:", err);
     return getMockMergedShops();
@@ -55,8 +63,9 @@ async function fetchAndMerge(): Promise<MergedShop[]> {
 }
 
 export function useShops() {
+  const { env } = useEnvironment();
   return useQuery<MergedShop[]>({
-    queryKey: ["karum-shops"],
+    queryKey: ["karum-shops", env],
     queryFn: fetchAndMerge,
     refetchInterval: REFETCH_INTERVAL,
     staleTime: REFETCH_INTERVAL / 2,

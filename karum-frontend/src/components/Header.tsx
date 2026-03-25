@@ -1,5 +1,7 @@
 import { Link, useLocation } from "react-router-dom";
 import { useWallet } from "../hooks/use-wallet";
+import { useEnvironment } from "../context/EnvironmentContext";
+import type { EveEnvironment } from "../env-config";
 
 const NAV_ITEMS = [
   { href: "/", label: "SHOPS" },
@@ -7,10 +9,16 @@ const NAV_ITEMS = [
   { href: "/register", label: "REGISTER", hideOnMobile: true },
 ];
 
+const ENV_OPTIONS: { value: EveEnvironment; label: string }[] = [
+  { value: "stillness", label: "STILLNESS" },
+  { value: "utopia", label: "UTOPIA" },
+];
+
 export function Header() {
   const { isConnected, eveVault, walletAddress, handleConnect, handleDisconnect } = useWallet();
   const { pathname } = useLocation();
   const activePage = pathname === "/" ? "/" : `/${pathname.split("/")[1]}`;
+  const { env, setEnv } = useEnvironment();
 
   return (
     <header className="border-b-2 border-border px-6 py-4 flex items-center shrink-0">
@@ -38,6 +46,23 @@ export function Header() {
           </Link>
         ))}
       </nav>
+
+      {/* Environment toggle */}
+      <div className="flex items-center mr-4 border-2 border-border">
+        {ENV_OPTIONS.map((opt) => (
+          <button
+            key={opt.value}
+            onClick={() => setEnv(opt.value)}
+            className={`px-2.5 py-1 text-[10px] font-bold tracking-wider cursor-pointer ${
+              env === opt.value
+                ? "text-amber bg-amber/10"
+                : "text-text-dim hover:text-text-mid"
+            }`}
+          >
+            {opt.label}
+          </button>
+        ))}
+      </div>
 
       {/* Right — wallet + purchases (desktop only) */}
       <div className="hidden sm:flex items-center gap-4">

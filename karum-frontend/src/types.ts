@@ -150,6 +150,8 @@ export interface SSUData {
     usedCapacity: number;
     items: InventoryItem[];
   };
+  /** EVE environment tenant (e.g. "utopia", "stillness") */
+  tenant?: string;
   /** Fuel info (from parent network node) */
   fuel?: {
     quantity: number;

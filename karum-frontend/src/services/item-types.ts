@@ -21,14 +21,21 @@ function loadFromCache() {
   if (loaded) return;
   loaded = true;
 
+  // Determine which env's cache to read
+  let env = "utopia";
   try {
-    const req = indexedDB.open("karum-cache", 1);
+    const stored = localStorage.getItem("karum:environment");
+    if (stored === "stillness" || stored === "utopia") env = stored;
+  } catch { /* ignore */ }
+
+  try {
+    const req = indexedDB.open("karum-cache", 2);
     req.onsuccess = () => {
       try {
         const db = req.result;
         const tx = db.transaction("entries", "readonly");
         const store = tx.objectStore("entries");
-        const get = store.get("karum:universe");
+        const get = store.get(`karum:universe:${env}`);
         get.onsuccess = () => {
           const entry = get.result;
           if (!entry?.data?.gameTypes) return;

@@ -5,6 +5,7 @@ import { createDAppKit, DAppKitProvider } from "@mysten/dapp-kit-react";
 import { SuiJsonRpcClient } from "@mysten/sui/jsonRpc";
 import "./index.css";
 import App from "./App";
+import { EnvironmentProvider } from "./context/EnvironmentContext";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -25,9 +26,11 @@ const dAppKit = createDAppKit({
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <QueryClientProvider client={queryClient}>
-      <DAppKitProvider dAppKit={dAppKit}>
-        <App />
-      </DAppKitProvider>
+      <EnvironmentProvider>
+        <DAppKitProvider dAppKit={dAppKit}>
+          <App />
+        </DAppKitProvider>
+      </EnvironmentProvider>
     </QueryClientProvider>
   </StrictMode>,
 );
