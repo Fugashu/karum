@@ -48,7 +48,7 @@ export function Header() {
       </nav>
 
       {/* Environment toggle */}
-      <div className="flex items-center mr-4 border-2 border-border">
+      <div className="flex items-center sm:mr-4 ml-auto sm:ml-0 border-2 border-border">
         {ENV_OPTIONS.map((opt) => (
           <button
             key={opt.value}
