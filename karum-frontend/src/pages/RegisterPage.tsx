@@ -15,10 +15,8 @@ import { itemName } from "../services/item-types";
 import { config } from "../config";
 import type { SSUData, InventoryItem } from "../types";
 
-const PKG =
-  "0xd12a70c74c1e759445d6f209b01d43d860e97fcf2ef72ccbbd00afd828043f75";
-const ENERGY_CONFIG =
-  "0x9285364e8104c04380d9cc4a001bbdfc81a554aad441c2909c2d3bd52a0c9c62";
+import { getEnvConfig } from "../env-config";
+
 const VENDOR_PKG = config.vendor.packageId;
 
 interface OfferRow {
@@ -281,6 +279,8 @@ function SetupFlow() {
     try {
       const tx = new Transaction();
       const { characterId, ownerCapId, networkNodeId } = ssuState;
+      const envCfg = getEnvConfig();
+      const PKG = envCfg.worldPackageId;
 
       if (!networkNodeId) throw new Error("SSU has no energy_source_id");
 
@@ -295,7 +295,7 @@ function SetupFlow() {
         arguments: [
           tx.object(id),
           tx.object(networkNodeId),
-          tx.object(ENERGY_CONFIG),
+          tx.object(envCfg.energyConfigId),
           ownerCap,
         ],
       });
@@ -329,6 +329,7 @@ function SetupFlow() {
     try {
       const tx = new Transaction();
       const { characterId, ownerCapId } = ssuState;
+      const PKG = getEnvConfig().worldPackageId;
 
       const [ownerCap, receipt] = tx.moveCall({
         target: `${PKG}::character::borrow_owner_cap`,

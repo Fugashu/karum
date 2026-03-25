@@ -4,6 +4,10 @@ export interface EnvironmentConfig {
   label: string;
   worldApi: string;
   karumApi: string;
+  /** EVE world contracts package ID (differs per environment) */
+  worldPackageId: string;
+  /** EnergyConfig shared object ID (differs per environment) */
+  energyConfigId: string;
 }
 
 export const ENV_CONFIGS: Record<EveEnvironment, EnvironmentConfig> = {
@@ -15,6 +19,8 @@ export const ENV_CONFIGS: Record<EveEnvironment, EnvironmentConfig> = {
     karumApi:
       import.meta.env.VITE_STILLNESS_KARUM_API_URL ||
       "https://backend.karum.space",
+    worldPackageId: "0x28b497559d65ab320d9da4613bf2498d5946b2c0ae3597ccfda3072ce127448c",
+    energyConfigId: "0xd77693d0df5656d68b1b833e2a23cc81eb3875d8d767e7bd249adde82bdbc952",
   },
   utopia: {
     label: "Utopia",
@@ -24,6 +30,8 @@ export const ENV_CONFIGS: Record<EveEnvironment, EnvironmentConfig> = {
     karumApi:
       import.meta.env.VITE_UTOPIA_KARUM_API_URL ||
       "https://utopia.karum.fugashu.dev",
+    worldPackageId: "0xd12a70c74c1e759445d6f209b01d43d860e97fcf2ef72ccbbd00afd828043f75",
+    energyConfigId: "0x9285364e8104c04380d9cc4a001bbdfc81a554aad441c2909c2d3bd52a0c9c62",
   },
 };
 
