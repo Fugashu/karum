@@ -5,7 +5,7 @@ import type { EveEnvironment } from "../env-config";
 
 const NAV_ITEMS = [
   { href: "/", label: "SHOPS" },
-  { href: "/navigation", label: "NAVIGATE" },
+  { href: "/navigation", label: "NAVIGATE", desktopOnly: true },
   { href: "/register", label: "REGISTER" },
 ];
 
@@ -108,7 +108,7 @@ export function Header() {
 
       {/* Row 2: Mobile nav tabs */}
       <nav className="sm:hidden flex border-t border-border">
-        {NAV_ITEMS.map((item) => (
+        {NAV_ITEMS.filter((item) => !item.desktopOnly).map((item) => (
           <Link
             key={item.href}
             to={item.href}
