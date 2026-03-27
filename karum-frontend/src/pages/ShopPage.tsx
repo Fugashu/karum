@@ -68,10 +68,6 @@ function ShopDetail({ shop, ownerNames }: { shop: MergedShop; ownerNames?: Map<s
   const { isConnected, walletAddress } = useWallet();
   const isMine = isConnected && walletAddress === shop.listing.owner;
 
-  const fuelPercent =
-    shop.ssu?.fuel && shop.ssu.fuel.maxCapacity > 0
-      ? Math.round((shop.ssu.fuel.quantity / shop.ssu.fuel.maxCapacity) * 100)
-      : 0;
 
   const [copied, setCopied] = useState(false);
 
@@ -146,12 +142,6 @@ function ShopDetail({ shop, ownerNames }: { shop: MergedShop; ownerNames?: Map<s
               {shop.listing.solar_system}
             </Link>
           )}
-          <span>
-            Fuel:{" "}
-            <span className={fuelPercent > 20 ? "text-green" : "text-red"}>
-              {fuelPercent}%
-            </span>
-          </span>
           <span>
             Owner:{" "}
             {ownerNames?.get(shop.listing.owner.toLowerCase()) || (
