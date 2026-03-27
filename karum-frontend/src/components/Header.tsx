@@ -97,7 +97,11 @@ export function Header() {
               >
                 PURCHASES
               </Link>
-              <span className="w-2 h-2 rounded-full bg-green shadow-[0_0_6px_rgba(74,222,128,0.6)]" />
+              <button
+                onClick={handleDisconnect}
+                className="w-2 h-2 rounded-full bg-green shadow-[0_0_6px_rgba(74,222,128,0.6)] cursor-pointer sm:cursor-default sm:pointer-events-none"
+                title="Disconnect"
+              />
               <span className="text-xs text-text-mid font-mono hidden sm:inline">
                 {walletAddress?.slice(0, 6)}...{walletAddress?.slice(-4)}
               </span>
