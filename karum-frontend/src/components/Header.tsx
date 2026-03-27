@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { useWallet } from "../hooks/use-wallet";
 import { useEnvironment } from "../context/EnvironmentContext";
@@ -19,6 +20,18 @@ export function Header() {
   const { pathname } = useLocation();
   const activePage = pathname === "/" ? "/" : `/${pathname.split("/")[1]}`;
   const { env, setEnv } = useEnvironment();
+  const [envNotice, setEnvNotice] = useState<string | null>(null);
+
+  // Show a brief notice when env changes (skip initial mount)
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => { setMounted(true); }, []);
+  useEffect(() => {
+    if (!mounted) return;
+    const label = env === "stillness" ? "Stillness" : "Utopia";
+    setEnvNotice(`Switched to ${label}. Make sure your EVE Vault is connected to the ${label} deployment.`);
+    const t = setTimeout(() => setEnvNotice(null), 5000);
+    return () => clearTimeout(t);
+  }, [env]);
 
   return (
     <header className="border-b-2 border-border shrink-0">
@@ -105,6 +118,19 @@ export function Header() {
           )}
         </div>
       </div>
+
+      {/* Env switch notice */}
+      {envNotice && (
+        <div className="px-4 sm:px-6 py-2 border-t border-border bg-amber/5 flex items-center justify-between">
+          <span className="text-[11px] text-amber">{envNotice}</span>
+          <button
+            onClick={() => setEnvNotice(null)}
+            className="text-[10px] text-text-dim hover:text-text cursor-pointer ml-3 shrink-0"
+          >
+            ✕
+          </button>
+        </div>
+      )}
 
       {/* Row 2: Mobile nav tabs */}
       <nav className="sm:hidden flex border-t border-border">
