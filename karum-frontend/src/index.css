@@ -48,6 +48,20 @@ html {
   font-size: 16px;
 }
 
+/* Fix dapp-kit connect modal on narrow viewports (SSU webview) */
+dialog::backdrop {
+  background: rgba(0, 0, 0, 0.6) !important;
+}
+
+mysten-dapp-kit-connect-modal {
+  position: fixed !important;
+  inset: 0 !important;
+  z-index: 9999 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
 /* Page transition fade */
 @keyframes fade-in {
   from { opacity: 0; }

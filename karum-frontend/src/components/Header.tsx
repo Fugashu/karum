@@ -83,13 +83,13 @@ export function Header() {
           ))}
         </div>
 
-        {/* Wallet — hidden on mobile (EVE Vault is desktop-only) */}
-        <div className="hidden sm:flex items-center gap-4">
+        {/* Wallet */}
+        <div className="flex items-center gap-4 ml-3 sm:ml-0">
           {isConnected ? (
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2 sm:gap-3">
               <Link
                 to="/history"
-                className={`text-xs tracking-wider ${
+                className={`hidden sm:inline text-xs tracking-wider ${
                   activePage === "/history"
                     ? "text-amber border-b-2 border-amber pb-1"
                     : "text-text-dim hover:text-text"
@@ -98,12 +98,12 @@ export function Header() {
                 PURCHASES
               </Link>
               <span className="w-2 h-2 rounded-full bg-green shadow-[0_0_6px_rgba(74,222,128,0.6)]" />
-              <span className="text-xs text-text-mid font-mono">
+              <span className="text-xs text-text-mid font-mono hidden sm:inline">
                 {walletAddress?.slice(0, 6)}...{walletAddress?.slice(-4)}
               </span>
               <button
                 onClick={handleDisconnect}
-                className="text-[10px] text-text-dim hover:text-red tracking-wider cursor-pointer"
+                className="text-[10px] text-text-dim hover:text-red tracking-wider cursor-pointer hidden sm:inline"
               >
                 ✕
               </button>
@@ -111,9 +111,9 @@ export function Header() {
           ) : (
             <button
               onClick={handleConnect}
-              className="px-3 py-1.5 border border-border text-xs text-text-dim hover:border-amber hover:text-amber tracking-wider cursor-pointer"
+              className="px-2 sm:px-3 py-1 sm:py-1.5 border border-border text-[10px] sm:text-xs text-text-dim hover:border-amber hover:text-amber tracking-wider cursor-pointer"
             >
-              {eveVault ? "CONNECT" : "NO EVE VAULT"}
+              {eveVault ? "CONNECT" : "NO VAULT"}
             </button>
           )}
         </div>
