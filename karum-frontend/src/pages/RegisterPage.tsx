@@ -403,7 +403,7 @@ function SetupFlow() {
       });
 
       setSubmitStatus("success");
-      setSubmitMessage("Shop registered on-chain! It will appear on the Finder page.");
+      setSubmitMessage("Shop registered on-chain! It will appear on the Shops page.");
       const trimmedId = ssuId.trim();
       const existing = savedSSUs.find((s) => s.id === trimmedId);
       if (existing) {
@@ -418,10 +418,6 @@ function SetupFlow() {
     }
   }
 
-  const fuelPercent =
-    ssuState?.data.fuel && ssuState.data.fuel.maxCapacity > 0
-      ? Math.round((ssuState.data.fuel.quantity / ssuState.data.fuel.maxCapacity) * 100)
-      : 0;
 
   const inputClass =
     "w-full bg-bg border-2 border-border px-3 py-2.5 text-sm text-text placeholder:text-text-dim focus:border-amber focus:outline-none";
@@ -484,7 +480,6 @@ function SetupFlow() {
               </span>
             </div>
             <div className="flex gap-4 text-xs text-text-dim">
-              <span>Fuel: <span className={fuelPercent > 20 ? "text-green" : "text-red"}>{fuelPercent}%</span></span>
               <span>Items: {ssuState.data.inventory.items.filter((i) => i.quantity > 0).length}</span>
               <span>Capacity: {ssuState.data.inventory.usedCapacity}/{ssuState.data.inventory.capacity}</span>
             </div>
