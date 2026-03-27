@@ -8,6 +8,27 @@ import { useShops } from "../hooks/use-shops";
 import { useUniverse } from "../hooks/use-universe";
 import { usePersisted } from "../hooks/use-persisted";
 
+function MobileBlocker() {
+  return (
+    <div className="sm:hidden flex flex-col items-center justify-center min-h-[60vh] px-6 text-center">
+      <div className="border-2 border-border p-8 bg-card max-w-sm">
+        <div className="text-2xl font-bold tracking-wider mb-4">
+          NAVIGATION
+        </div>
+        <p className="font-body text-text-mid text-base leading-relaxed mb-4">
+          The 3D star map requires a larger screen. Please visit this page on a desktop browser.
+        </p>
+        <a
+          href="/"
+          className="inline-block px-4 py-2 border-2 border-amber text-amber text-xs font-bold tracking-wider hover:bg-amber/10"
+        >
+          BACK TO SHOPS
+        </a>
+      </div>
+    </div>
+  );
+}
+
 export function NavigationPage() {
   const [searchParams] = useSearchParams();
   const systemParam = searchParams.get("system");
@@ -38,9 +59,10 @@ export function NavigationPage() {
 
   return (
     <div className="h-full bg-bg flex flex-col overflow-hidden">
+      <MobileBlocker />
 
 
-      <div className="flex flex-1 min-h-0 overflow-hidden">
+      <div className="hidden sm:flex flex-1 min-h-0 overflow-hidden">
         <ShopSidebar
           fromSystemId={from}
           solarSystems={universe?.solarSystems ?? []}
