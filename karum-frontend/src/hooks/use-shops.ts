@@ -54,7 +54,7 @@ async function fetchAndMerge(): Promise<MergedShop[]> {
     // 4. Filter by active environment tenant
     const activeEnv = getActiveEnv();
     return merged.filter(
-      (shop) => !shop.ssu?.tenant || shop.ssu.tenant === activeEnv,
+      (shop) => shop.ssu?.tenant === activeEnv,
     );
   } catch (err) {
     console.error("[use-shops] Fetch failed, falling back to mock data:", err);
