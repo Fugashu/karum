@@ -16,6 +16,7 @@ import { useWallet } from "../hooks/use-wallet";
 import { useCharacter } from "../hooks/use-character";
 import { ItemCard } from "../components/ui/ItemCard";
 import { getEnvConfig } from "../env-config";
+import { useEnvironment } from "../context/EnvironmentContext";
 import type { MergedShop, ShopOffer } from "../types";
 
 const SORT_OPTIONS: { value: SortMode; label: string }[] = [
@@ -568,9 +569,10 @@ function BuyPanel({ shop, onPurchase, selectedOffer, onClear }: {
 
 function ShareButton({ ssuId }: { ssuId: string }) {
   const [copied, setCopied] = useState(false);
+  const { env } = useEnvironment();
 
   const handleShare = useCallback(async () => {
-    const url = `${window.location.origin}/shop/${ssuId}`;
+    const url = `${window.location.origin}/shop/${ssuId}?env=${env}`;
     if (navigator.share) {
       try {
         await navigator.share({ title: "KARUM Shop", url });

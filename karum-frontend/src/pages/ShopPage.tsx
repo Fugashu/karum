@@ -10,6 +10,7 @@ import { useRemoveShop } from "../hooks/use-deactivate-shop";
 
 import { itemInfo } from "../services/item-types";
 import { getEnvConfig } from "../env-config";
+import { useEnvironment } from "../context/EnvironmentContext";
 import type { MergedShop, ShopOffer } from "../types";
 
 export function ShopPage() {
@@ -66,13 +67,13 @@ export function ShopPage() {
 
 function ShopDetail({ shop, ownerNames }: { shop: MergedShop; ownerNames?: Map<string, string> }) {
   const { isConnected, walletAddress } = useWallet();
+  const { env } = useEnvironment();
   const isMine = isConnected && walletAddress === shop.listing.owner;
-
 
   const [copied, setCopied] = useState(false);
 
   function handleShare() {
-    const url = `${window.location.origin}/shop/${shop.listing.ssu_id}`;
+    const url = `${window.location.origin}/shop/${shop.listing.ssu_id}?env=${env}`;
     navigator.clipboard.writeText(url).then(() => {
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
