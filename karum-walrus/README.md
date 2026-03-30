@@ -2,7 +2,7 @@
 
 Live at: https://karum.wal.app
 
-Site object ID: `0x0eeee4295e97cf9baf9281d78922247c18ea3ca39da110391ee8be95353463ab`
+Site object ID: `0xaf557acd5a0ac0ddcf179724e3ed303e60eae1e2d1d50a65a188d172ea208aaa`
 
 ## Config Files
 
