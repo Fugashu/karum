@@ -38,7 +38,7 @@ export function ItemCard({
       <button
         type="button"
         onClick={onClick}
-        className="cursor-pointer w-full flex flex-col items-center"
+        className="cursor-pointer w-full flex flex-col items-center flex-1 min-h-0"
       >
         <div className="relative w-[64px] h-[64px]">
           <img
@@ -69,7 +69,7 @@ export function ItemCard({
           </div>
         )}
 
-        <div className="w-full px-0.5 pb-1 text-center">
+        <div className="w-full px-0.5 pb-1 text-center h-[28px] flex items-center justify-center">
           <span
             className={`text-[9px] leading-tight line-clamp-2 transition-colors duration-300 ${
               highlight ? "text-amber" : "text-text-dim"
